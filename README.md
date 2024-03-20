@@ -1,4 +1,12 @@
-### Hi there 👋
+Thank you for visiting our Github profile.
+I'm Tsunami.
+We are working under the team name CRUD5th.
+My specialty is in the WEB area,
+but I'm also working on low-layer OS development.
+Currently, I'm aiming to be a generalist who can cover a wide range of technologies
+rather than increasing my technical depth.
+If you find any repositories you can use,
+please feel free to use them.
 
 <!--
 **crudfifth/crudfifth** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
