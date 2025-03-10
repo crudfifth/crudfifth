@@ -4,8 +4,6 @@
   <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&duration=4000&pause=500&color=F74C00&center=true&vCenter=true&width=500&height=50&lines=Hey+there!+I'm+Tsunami!;CRUD5th+Team+Lead;Generalist+%7C+Web+%26+OS+Dev+;Let's+Code+Something+Awesome!+%f0%9f%94%a5">
 </p>
 
----
-
 ## 🌊 About Me
 👋 **Hey there! I'm Tsunami.**  
 🔹 We are working under the team name **CRUD5th**.  
@@ -67,11 +65,3 @@ rather than focusing solely on technical depth.
 🌐 Website: [totomediasite.com](https://totomediasite.com/)  
 
 ---
-
-Feel free to **fork and customize** it as you like! 😃  
-
----
-
-<!--
-**crudfifth/crudfifth** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
--->
