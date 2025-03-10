@@ -9,9 +9,9 @@
 🔹 I'm aiming to be a **generalist** who can cover a wide range of technologies  
 rather than focusing solely on technical depth.  
 
----
-
 💡 **If you find any repositories useful, feel free to use them!**  
+
+---
 
 <p align="center">
   <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&duration=4000&pause=500&color=F74C00&center=true&vCenter=true&width=500&height=50&lines=Hey+there!+I'm+Tsunami!;CRUD5th+Team+Lead;Generalist+%7C+Web+%26+OS+Dev+;Let's+Code+Something+Awesome!+%f0%9f%94%a5">
@@ -56,7 +56,6 @@ rather than focusing solely on technical depth.
 ---
 
 ## 🏗 **Tech Stack**
-<!-- 🌟 ゴリゴリのアイコンバッジ -->
 <p align="center">
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black">
   <img src="https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white">
@@ -67,29 +66,11 @@ rather than focusing solely on technical depth.
 
 ---
 
-## 🌍 **Dynamic Profile Features**
-<!-- GitHub Actionsで定期更新 -->
-- ⏰ **Current Time:** ![Time](https://worldtimeapi.org/api/timezone/Asia/Tokyo)
-- 🌦 **Today's Weather in Tokyo:** ![Weather](https://wttr.in/Tokyo?format=3)
-- 🎵 **Now Playing:** *(Spotify APIで取得予定 - GitHub Actionsが必要)*
-
----
-
 ## 📩 **Contact**
 🐦 Twitter: [@CRUD5th](https://x.com/CRUD5th)  
 🌐 Website: [totomediasite.com](https://totomediasite.com/)  
 
 ---
-
-## **💡 What’s Next?**
-🔧 More automation features with GitHub Actions  
-🎨 Custom SVG animations  
-🚀 Even more interactivity in this profile!
-
----
-
-### 📝 Notes
-This profile README is powered by **GitHub Stats**, **SVG Animations**, **Custom Badges**, and **GitHub Actions** for real-time updates!  
 
 Feel free to **fork and customize** it as you like! 😃  
 
