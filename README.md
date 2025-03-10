@@ -1,6 +1,10 @@
 # 🚀 Welcome to CRUD5th's GitHub Profile! 🚀
 
-![Profile Banner](https://user-images.githubusercontent.com/your-image/banner.gif)
+<p align="center">
+  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&duration=4000&pause=500&color=F74C00&center=true&vCenter=true&width=500&height=50&lines=Hey+there!+I'm+Tsunami!;CRUD5th+Team+Lead;Generalist+%7C+Web+%26+OS+Dev+;Let's+Code+Something+Awesome!+%f0%9f%94%a5">
+</p>
+
+---
 
 ## 🌊 About Me
 👋 **Hey there! I'm Tsunami.**  
@@ -8,14 +12,6 @@
 🔹 My specialty is in the **WEB area**, but I also work on **low-layer OS development**.  
 🔹 I'm aiming to be a **generalist** who can cover a wide range of technologies  
 rather than focusing solely on technical depth.  
-
-💡 **If you find any repositories useful, feel free to use them!**  
-
----
-
-<p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&duration=4000&pause=500&color=F74C00&center=true&vCenter=true&width=500&height=50&lines=Hey+there!+I'm+Tsunami!;CRUD5th+Team+Lead;Generalist+%7C+Web+%26+OS+Dev+;Let's+Code+Something+Awesome!+%f0%9f%94%a5">
-</p>
 
 ---
 
