@@ -64,19 +64,17 @@ rather than focusing solely on technical depth.
 <ul>
   <li>🐦 X: [@CRUD5th](https://x.com/CRUD5th)  </li>
   <li>🌐 Portal Site: [totomediasite.com](https://totomediasite.com/) </li>
+  <li>🌐 Zenn: [zenn.com](https://zenn.dev/crudfifth)</li>
+  <li>🌐 Facebook: [facebook.com](https://www.facebook.com/profile.php?id=61554965062342)  </li>
+  <li>🌐 Qiita: [qiita.com](https://qiita.com/CRUD5th)  </li>
+  <li>🌐 Blood raven: [boold-raven.com](https://blood-raven.com/)  </li>
+  <li>🌐 SynVRea: [synvrea.com](https://synvrea.com/)  </li>
+  <li>🌐 CRUD5th Official: [crudfifth.com](https://crudfifth.com/)  </li>
+  <li>🌐 Wantedly: [wantedly.com](https://www.wantedly.com/id/CRUD5th)</li>
+  <li>🌐 Lancers: [Lancers.jp](https://www.lancers.jp/profile/crudfifth)  </li>
+  <li>🌐 Crowdworks: [crowdworks.jp](https://crowdworks.jp/public/employees/5793463)</li>
+  <li>🌐 Codepen: [codepen.io](https://codepen.io/CRUD5th)  </li>
+  <li>🌐 Instagram: [instagram.com](https://www.instagram.com/crud5th_toto_/)  </li>
 </ul>
-
-
-🌐 Zenn: [totomediasite.com](https://totomediasite.com/)  
-🌐 Facebook: [totomediasite.com]([https://totomediasite.com/](https://www.facebook.com/profile.php?id=61554965062342))  
-🌐 Qiita: [totomediasite.com](https://qiita.com/CRUD5th)  
-🌐 Blood raven: [totomediasite.com](https://blood-raven.com/)  
-🌐 SynVRea: [synvrea.com](https://synvrea.com/)  
-🌐 CRUD5th Official: [crudfifth.com](https://crudfifth.com/)  
-🌐 Wantedly: [wantedly.com](https://www.wantedly.com/id/CRUD5th)
-🌐 Lancers: [Lancers.jp](https://www.lancers.jp/profile/crudfifth)  
-🌐 Crowdworks: [crowdworks.jp](https://crowdworks.jp/public/employees/5793463)
-🌐 Codepen: [codepen.io](https://codepen.io/CRUD5th)  
-🌐 Instagram: [instagram.com](https://www.instagram.com/crud5th_toto_/)  
 
 ---
