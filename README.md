@@ -2,7 +2,6 @@
 
 ![Profile Banner](https://user-images.githubusercontent.com/your-image/banner.gif)
 
-<!-- 📝 アニメーションで動く自己紹介 -->
 <p align="center">
   <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&duration=4000&pause=500&color=F74C00&center=true&vCenter=true&width=500&height=50&lines=Hey+there!+I'm+Tsunami!;CRUD5th+Team+Lead;Generalist+%7C+Web+%26+OS+Dev+;Let's+Code+Something+Awesome!+🔥">
 </p>
@@ -75,8 +74,8 @@ rather than focusing solely on technical depth.
 ---
 
 ## 📬 **Contact**
-🐦 Twitter: [@your_twitter](https://twitter.com/your_twitter)  
-🌐 Website: [your-website.com](https://your-website.com)  
+🐦 Twitter: [@your_twitter](https://x.com/CRUD5th)  
+🌐 Website: [totomediasite.com](https://totomediasite.com/)  
 
 ---
 
