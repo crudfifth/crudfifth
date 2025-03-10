@@ -61,8 +61,12 @@ rather than focusing solely on technical depth.
 ---
 
 ## 📩 **Social Link**
-🐦 X: [@CRUD5th](https://x.com/CRUD5th)  
-🌐 Portal Site: [totomediasite.com](https://totomediasite.com/) 
+<ul>
+  <li>🐦 X: [@CRUD5th](https://x.com/CRUD5th)  </li>
+  <li>🌐 Portal Site: [totomediasite.com](https://totomediasite.com/) </li>
+</ul>
+
+
 🌐 Zenn: [totomediasite.com](https://totomediasite.com/)  
 🌐 Facebook: [totomediasite.com]([https://totomediasite.com/](https://www.facebook.com/profile.php?id=61554965062342))  
 🌐 Qiita: [totomediasite.com](https://qiita.com/CRUD5th)  
