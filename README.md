@@ -4,13 +4,6 @@
   <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&duration=4000&pause=500&color=F74C00&center=true&vCenter=true&width=500&height=50&lines=Hey+there!+I'm+Tsunami!;CRUD5th+Team+Lead;Generalist+%7C+Web+%26+OS+Dev+;Let's+Code+Something+Awesome!+%f0%9f%94%a5">
 </p>
 
-## 🌊 About Me
-👋 **Hey there! I'm Tsunami.**  
-🔹 We are working under the team name **CRUD5th**.  
-🔹 My specialty is in the **WEB area**, but I also work on **low-layer OS development**.  
-🔹 I'm aiming to be a **generalist** who can cover a wide range of technologies  
-rather than focusing solely on technical depth.  
-
 ---
 
 ## 📈 **Activity Overview**
@@ -60,6 +53,14 @@ rather than focusing solely on technical depth.
 
 ---
 
+## 🌊 About Me
+👋 **Hey there! I'm Tsunami.**  
+🔹 We are working under the team name **CRUD5th**.  
+🔹 My specialty is in the **WEB area**, but I also work on **low-layer OS development**.  
+🔹 I'm aiming to be a **generalist** who can cover a wide range of technologies  
+rather than focusing solely on technical depth.  
+
+---
 ## 📩 **Social Link**
 <ul>
   <li>🐦 X: [@CRUD5th](https://x.com/CRUD5th)  </li>
