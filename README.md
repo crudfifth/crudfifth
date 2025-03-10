@@ -8,6 +8,9 @@ rather than increasing my technical depth.
 If you find any repositories you can use,
 please feel free to use them.
 
+https://github-stats-evirunurm.vercel.app/api/stats.js?username=crudfifth
+
+https://github-stats-evirunurm.vercel.app/api/languages.js?username=crudfifth
 <!--
 **crudfifth/crudfifth** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
 
