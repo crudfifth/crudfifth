@@ -3,7 +3,7 @@
 ![Profile Banner](https://user-images.githubusercontent.com/your-image/banner.gif)
 
 <p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&duration=4000&pause=500&color=F74C00&center=true&vCenter=true&width=500&height=50&lines=Hey+there!+I'm+Tsunami!;CRUD5th+Team+Lead;Generalist+%7C+Web+%26+OS+Dev+;Let's+Code+Something+Awesome!+🔥">
+  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&duration=4000&pause=500&color=F74C00&center=true&vCenter=true&width=500&height=50&lines=Hey+there!+I'm+Tsunami!;CRUD5th+Team+Lead;Generalist+%7C+Web+%26+OS+Dev+;Let's+Code+Something+Awesome!+%f0%9f%94%a5">
 </p>
 
 ---
@@ -43,13 +43,15 @@ rather than focusing solely on technical depth.
 
 ## ⚡ **Language Usage**
 <p align="center">
-  <img src="https://github-stats-evirunurm.vercel.app/api/languages.js?username=crudfifth">
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=crudfifth&layout=compact&theme=tokyonight">
 </p>
 
 ---
 
 ## 📈 **Activity Overview**
-![GitHub Activity](https://github-readme-activity-graph.cyclic.app/graph?username=crudfifth&theme=radical)
+<p align="center">
+  <img src="https://github-readme-activity-graph.vercel.app/graph?username=crudfifth&theme=radical">
+</p>
 
 ---
 
@@ -69,11 +71,11 @@ rather than focusing solely on technical depth.
 <!-- GitHub Actionsで定期更新 -->
 - ⏰ **Current Time:** ![Time](https://worldtimeapi.org/api/timezone/Asia/Tokyo)
 - 🌦 **Today's Weather in Tokyo:** ![Weather](https://wttr.in/Tokyo?format=3)
-- 🎵 **Now Playing:** (Spotify APIで取得予定)
+- 🎵 **Now Playing:** *(Spotify APIで取得予定 - GitHub Actionsが必要)*
 
 ---
 
-## 📬 **Contact**
+## 📩 **Contact**
 🐦 Twitter: [@CRUD5th](https://x.com/CRUD5th)  
 🌐 Website: [totomediasite.com](https://totomediasite.com/)  
 
