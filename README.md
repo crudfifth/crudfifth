@@ -74,7 +74,7 @@ rather than focusing solely on technical depth.
 ---
 
 ## 📬 **Contact**
-🐦 Twitter: [@your_twitter](https://x.com/CRUD5th)  
+🐦 Twitter: [@CRUD5th](https://x.com/CRUD5th)  
 🌐 Website: [totomediasite.com](https://totomediasite.com/)  
 
 ---
