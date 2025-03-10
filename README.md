@@ -4,8 +4,6 @@
   <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&duration=4000&pause=500&color=F74C00&center=true&vCenter=true&width=500&height=50&lines=Hey+there!+I'm+Tsunami!;CRUD5th+Team+Lead;Generalist+%7C+Web+%26+OS+Dev+;Let's+Code+Something+Awesome!+%f0%9f%94%a5">
 </p>
 
----
-
 ## 📈 **Activity Overview**
 <p align="center">
   <img src="https://github-readme-activity-graph.vercel.app/graph?username=crudfifth&bg_color=000000&color=FF5555&line=FF5555&point=FFFFFF&area=true&hide_border=true">
@@ -13,7 +11,7 @@
 
 ---
 
-## 📊 GitHub Stats 🚀
+## 📊 GitHub Stats
 <p align="center">
   <img src="https://github-readme-stats.vercel.app/api?username=crudfifth&show_icons=true&theme=radical" width="50%">
   <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=crudfifth&layout=compact&theme=tokyonight" width="45%">
