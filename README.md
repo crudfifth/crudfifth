@@ -114,6 +114,7 @@ rather than focusing solely on technical depth.
 </ul>
 
 ---
-![GitHub Contribution Graph](https://github-chart.vercel.app/api?username=crudfifth&theme=tokyonight)
-![GitHub Stats](https://github-readme-stats.vercel.app/api?username=crudfifth&show_icons=true&theme=radical)
-![GitHub Activity Graph](https://github-readme-activity-graph.vercel.app/graph?username=crudfifth&theme=github)
+![GitHub Isometric Contributions](https://github.com/crudfifth/isometric-contributions/blob/main/output.svg)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/crudfifth/github-profile-3d-contrib/main/profile-3d-contrib.svg">
+</p>
