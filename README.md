@@ -114,7 +114,5 @@ rather than focusing solely on technical depth.
 </ul>
 
 ---
-![GitHub Isometric Contributions](https://github.com/crudfifth/isometric-contributions/blob/main/output.svg)
-<p align="center">
-  <img src="https://raw.githubusercontent.com/crudfifth/github-profile-3d-contrib/main/profile-3d-contrib.svg">
-</p>
+![GitHub Isometric Contributions](https://crudfifth.github.io/isometric-contributions/output.svg)
+
