@@ -15,7 +15,7 @@
   a{color:var(--accent)}@media(max-width:600px){main{padding:20px 12px 40px}header{display:block}.controls{gap:6px}.separator{display:none}button{padding:8px 10px}}
 </style>
 <main>
-  <header><div><div class="label">LOCAL PREVIEW</div><h1>CRUD5th / GitHubプロフィール</h1><p>透明SVGを、GitHubに近い背景色で確認します。</p></div><p>800 px · SVG / img</p></header>
+  <header><div><div class="label">LOCAL PREVIEW</div><h1>CRUD5th / GitHubプロフィール</h1></div></header>
   <div class="controls" aria-label="プレビュー設定">
     <button type="button" id="dark" aria-pressed="true">暗色</button>
     <button type="button" id="light" aria-pressed="false">明色</button><span class="separator"></span>
@@ -23,7 +23,7 @@
     <button type="button" id="still" aria-pressed="false">静止画を確認</button>
   </div>
   <p id="status" role="status" aria-live="polite">読み込み中…</p>
-  <figure><img id="profile" src="assets/profile-dark.svg" width="800" height="868" alt="CRUD5thの自己紹介、GitHub公開統計、公開イベント取得分、主言語別repo件数、技術スタック"><figcaption>公開APIから取得したデータを使用。言語は主言語別repo件数で、未判定repoも画像内に示しています。活動は公開イベントの取得分です。背景・動き・静止状態をローカルで確認できます。<br><a id="source" href="assets/profile-dark.svg">SVGを直接開く</a></figcaption></figure>
+  <figure><img id="profile" src="assets/profile-dark.svg" width="800" height="868" alt="CRUD5thの自己紹介、GitHub公開統計、公開イベント取得分、主言語別repo件数、技術スタック"><figcaption><a id="source" href="assets/profile-dark.svg">SVGを直接開く</a></figcaption></figure>
 </main>
 <script>
   const image = document.querySelector('#profile');

@@ -41,7 +41,7 @@ test('five sections animate and reduced motion preserves the final readable stat
 test('real counts keep their measured scope and missing-language denominator', () => {
   const svg = renderProfileSvg(profile);
   assert.match(svg, /公開イベント・取得分/);
-  assert.match(svg, /年間貢献数ではありません/);
+  assert.doesNotMatch(svg, /年間貢献数ではありません|SELF-HOSTED SVG/);
   assert.match(svg, /主言語別repo件数/);
   assert.match(svg, /判定済み 13 \/ 290/);
   assert.match(svg, /未判定 277/);

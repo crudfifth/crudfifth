@@ -191,7 +191,6 @@ ${points.filter((point) => point.count > 0).map((point, index) => `<circle class
 ${chart}
 ${textNode(35, 481, range, 'mono muted', 'font-size="11"')}
 ${textNode(765, 481, '公開イベント・取得分', 'muted', 'text-anchor="end" font-size="11"')}
-${textNode(35, 501, 'APIで取得できた範囲。年間貢献数ではありません。', 'muted', 'font-size="11"')}
 </g>`;
 }
 
@@ -243,7 +242,6 @@ export function renderProfileSvg(input, { theme = 'dark' } = {}) {
 ${renderIntro(profile)}
 <path d="M32 232 H768 M32 350 H768 M32 519 H768 M32 ${stackY - 25} H768" class="rule"/>
 ${renderStats(profile)}${renderActivity(profile)}${renderLanguages(profile, languageY)}${renderStack(stackY)}
-${textNode(35, height - 16, 'GITHUB PUBLIC DATA / SELF-HOSTED SVG', 'mono eyebrow muted')}
 ${textNode(765, height - 16, `UPDATED ${new Date(profile.generatedAt).toISOString().slice(0, 10)} UTC`, 'mono eyebrow muted', 'text-anchor="end"')}
 </svg>\n`;
 }
