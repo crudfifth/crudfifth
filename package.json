@@ -1,0 +1,11 @@
+{
+  "name": "crud5th-github-profile",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "render": "node render.mjs",
+    "test": "node --test collect.test.mjs render.test.mjs",
+    "serve": "node serve.mjs"
+  }
+}

@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "owner": "crudfifth",
+  "generatedAt": "2026-11-01T15:17:53.047Z",
+  "profile": {
+    "name": "CRUD5th-髙橋綱弥-",
+    "bio": "Freelance Full-Stack / AI & LLM Engineer | TypeScript, Python, Rust | Design → Build → Release → Operate | CRUD5th",
+    "followers": 4,
+    "following": 0,
+    "publicRepos": 291,
+    "url": "https://github.com/crudfifth"
+  },
+  "repositories": {
+    "publicCount": 291,
+    "originalCount": 290,
+    "stars": 286,
+    "forks": 0
+  },
+  "languages": [
+    {
+      "name": "HTML",
+      "count": 3
+    },
+    {
+      "name": "TypeScript",
+      "count": 3
+    },
+    {
+      "name": "PHP",
+      "count": 2
+    },
+    {
+      "name": "Ada",
+      "count": 1
+    },
+    {
+      "name": "Hack",
+      "count": 1
+    },
+    {
+      "name": "JavaScript",
+      "count": 1
+    },
+    {
+      "name": "Rust",
+      "count": 1
+    },
+    {
+      "name": "Vue",
+      "count": 1
+    }
+  ],
+  "activity": {
+    "kind": "public-events",
+    "label": "直近に取得できた公開イベント",
+    "since": "2026-10-05",
+    "until": "2026-10-30",
+    "complete": false,
+    "eventCount": 21,
+    "days": [
+      {
+        "date": "2026-10-05",
+        "count": 1
+      },
+      {
+        "date": "2026-10-06",
+        "count": 0
+      },
+      {
+        "date": "2026-10-07",
+        "count": 0
+      },
+      {
+        "date": "2026-10-08",
+        "count": 0
+      },
+      {
+        "date": "2026-10-09",
+        "count": 0
+      },
+      {
+        "date": "2026-10-10",
+        "count": 0
+      },
+      {
+        "date": "2026-10-11",
+        "count": 0
+      },
+      {
+        "date": "2026-10-12",
+        "count": 0
+      },
+      {
+        "date": "2026-10-13",
+        "count": 0
+      },
+      {
+        "date": "2026-10-14",
+        "count": 0
+      },
+      {
+        "date": "2026-10-15",
+        "count": 0
+      },
+      {
+        "date": "2026-10-16",
+        "count": 0
+      },
+      {
+        "date": "2026-10-17",
+        "count": 0
+      },
+      {
+        "date": "2026-10-18",
+        "count": 0
+      },
+      {
+        "date": "2026-10-19",
+        "count": 0
+      },
+      {
+        "date": "2026-10-20",
+        "count": 0
+      },
+      {
+        "date": "2026-10-21",
+        "count": 0
+      },
+      {
+        "date": "2026-10-22",
+        "count": 0
+      },
+      {
+        "date": "2026-10-23",
+        "count": 0
+      },
+      {
+        "date": "2026-10-24",
+        "count": 0
+      },
+      {
+        "date": "2026-10-25",
+        "count": 4
+      },
+      {
+        "date": "2026-10-26",
+        "count": 7
+      },
+      {
+        "date": "2026-10-27",
+        "count": 0
+      },
+      {
+        "date": "2026-10-28",
+        "count": 0
+      },
+      {
+        "date": "2026-10-29",
+        "count": 2
+      },
+      {
+        "date": "2026-10-30",
+        "count": 7
+      }
+    ]
+  },
+  "projects": [
+    {
+      "name": "www",
+      "description": "",
+      "url": "https://github.com/crudfifth/www",
+      "stars": 1,
+      "language": ""
+    },
+    {
+      "name": "book-app",
+      "description": "",
+      "url": "https://github.com/crudfifth/book-app",
+      "stars": 0,
+      "language": ""
+    },
+    {
+      "name": "sentinel",
+      "description": "",
+      "url": "https://github.com/crudfifth/sentinel",
+      "stars": 1,
+      "language": "Ada"
+    }
+  ]
+}

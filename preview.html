@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ja" data-theme="dark">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CRUD5th Profile — Local Preview</title>
+<style>
+  :root{color-scheme:dark;--surface:#0d1117;--ink:#e6edf3;--muted:#9ba7b4;--rule:#303b46;--accent:#ff944d}
+  :root[data-theme="light"]{color-scheme:light;--surface:#fff;--ink:#202831;--muted:#576571;--rule:#cbd2d9;--accent:#a8440b}
+  *{box-sizing:border-box}body{margin:0;background:var(--surface);color:var(--ink);font:14px/1.5 system-ui,sans-serif}
+  main{max-width:1000px;margin:0 auto;padding:32px 24px 64px}header{display:flex;align-items:start;justify-content:space-between;gap:20px;border-bottom:1px solid var(--rule);padding-bottom:20px;margin-bottom:22px}
+  h1{font-size:18px;font-weight:600;margin:0 0 6px}p{margin:0;color:var(--muted)}.label{font:11px ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:1px;color:var(--accent);margin-bottom:8px}
+  .controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:14px}button{min-height:44px;padding:9px 14px;border:1px solid var(--rule);border-radius:2px;background:transparent;color:var(--ink);font:inherit;cursor:pointer}
+  button[aria-pressed="true"]{border-color:var(--accent);color:var(--accent)}button:hover{background:color-mix(in srgb,var(--ink) 7%,transparent)}button:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+  .separator{width:10px}#status{font-size:12px;margin:8px 0 22px}figure{margin:0}img{display:block;width:100%;max-width:800px;height:auto;margin:0 auto}figcaption{max-width:800px;margin:24px auto 0;border-top:1px solid var(--rule);padding-top:14px;font-size:12px;color:var(--muted)}
+  a{color:var(--accent)}@media(max-width:600px){main{padding:20px 12px 40px}header{display:block}.controls{gap:6px}.separator{display:none}button{padding:8px 10px}}
+</style>
+<main>
+  <header><div><div class="label">LOCAL PREVIEW</div><h1>CRUD5th / GitHubプロフィール</h1><p>透明SVGを、GitHubに近い背景色で確認します。</p></div><p>800 px · SVG / img</p></header>
+  <div class="controls" aria-label="プレビュー設定">
+    <button type="button" id="dark" aria-pressed="true">暗色</button>
+    <button type="button" id="light" aria-pressed="false">明色</button><span class="separator"></span>
+    <button type="button" id="reload">アニメーションを再読み込み</button>
+    <button type="button" id="still" aria-pressed="false">静止画を確認</button>
+  </div>
+  <p id="status" role="status" aria-live="polite">読み込み中…</p>
+  <figure><img id="profile" src="assets/profile-dark.svg" width="800" height="868" alt="CRUD5thの自己紹介、GitHub公開統計、公開イベント取得分、主言語別repo件数、技術スタック"><figcaption>公開APIから取得したデータを使用。言語は主言語別repo件数で、未判定repoも画像内に示しています。活動は公開イベントの取得分です。背景・動き・静止状態をローカルで確認できます。<br><a id="source" href="assets/profile-dark.svg">SVGを直接開く</a></figcaption></figure>
+</main>
+<script>
+  const image = document.querySelector('#profile');
+  const status = document.querySelector('#status');
+  const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
+  let theme = 'dark';
+  let isStill = false;
+  let blobUrl;
+  let requestNumber = 0;
+  async function updatePreview() {
+    const currentRequest = ++requestNumber;
+    const sourcePath = `assets/profile-${theme}.svg`;
+    document.documentElement.dataset.theme = theme;
+    document.querySelector('#dark').setAttribute('aria-pressed', String(theme === 'dark'));
+    document.querySelector('#light').setAttribute('aria-pressed', String(theme === 'light'));
+    document.querySelector('#still').setAttribute('aria-pressed', String(isStill));
+    document.querySelector('#source').href = sourcePath;
+    try {
+      const response = await fetch(`${sourcePath}?preview=${Date.now()}`, { cache: 'no-store' });
+      if (!response.ok) throw new Error(`SVGの取得に失敗しました (${response.status})`);
+      const text = await response.text();
+      if (currentRequest !== requestNumber) return;
+      const documentSvg = new DOMParser().parseFromString(text, 'image/svg+xml');
+      if (documentSvg.querySelector('parsererror')) throw new Error('SVGを読み込めませんでした');
+      const svg = documentSvg.documentElement;
+      if (isStill || reducedMotion.matches) {
+        const style = documentSvg.createElementNS('http://www.w3.org/2000/svg', 'style');
+        style.textContent = '*{animation:none!important;opacity:1!important;transform:none!important;clip-path:none!important;stroke-dashoffset:0!important}';
+        svg.append(style);
+      }
+      const nextBlobUrl = URL.createObjectURL(new Blob([new XMLSerializer().serializeToString(documentSvg)], { type: 'image/svg+xml' }));
+      const previousBlobUrl = blobUrl;
+      blobUrl = nextBlobUrl;
+      image.src = blobUrl;
+      image.width = Number(svg.getAttribute('width'));
+      image.height = Number(svg.getAttribute('height'));
+      if (previousBlobUrl) URL.revokeObjectURL(previousBlobUrl);
+      status.textContent = `${theme === 'dark' ? '暗色' : '明色'} / ${isStill ? '静止画（完成状態）' : reducedMotion.matches ? '動きを減らす設定により静止表示' : 'アニメーション（10秒周期）'}`;
+    } catch (error) { if (currentRequest === requestNumber) status.textContent = error.message; }
+  }
+  document.querySelector('#dark').addEventListener('click', () => { theme = 'dark'; updatePreview(); });
+  document.querySelector('#light').addEventListener('click', () => { theme = 'light'; updatePreview(); });
+  document.querySelector('#reload').addEventListener('click', () => { isStill = false; updatePreview(); });
+  document.querySelector('#still').addEventListener('click', () => { isStill = !isStill; updatePreview(); });
+  reducedMotion.addEventListener('change', updatePreview);
+  updatePreview();
+</script>
+</html>
