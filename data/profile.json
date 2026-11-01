@@ -1,7 +1,17 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "owner": "crudfifth",
-  "generatedAt": "2026-11-01T15:17:53.047Z",
+  "sources": [
+    {
+      "login": "crudfifth",
+      "type": "User"
+    },
+    {
+      "login": "CRUD5thOfficial",
+      "type": "Organization"
+    }
+  ],
+  "generatedAt": "2026-11-01T23:45:29.234Z",
   "profile": {
     "name": "CRUD5th-髙橋綱弥-",
     "bio": "Freelance Full-Stack / AI & LLM Engineer | TypeScript, Python, Rust | Design → Build → Release → Operate | CRUD5th",
@@ -11,19 +21,23 @@
     "url": "https://github.com/crudfifth"
   },
   "repositories": {
-    "publicCount": 291,
-    "originalCount": 290,
+    "publicCount": 292,
+    "originalCount": 291,
     "stars": 286,
     "forks": 0
   },
   "languages": [
     {
+      "name": "TypeScript",
+      "count": 4
+    },
+    {
       "name": "HTML",
       "count": 3
     },
     {
-      "name": "TypeScript",
-      "count": 3
+      "name": "JavaScript",
+      "count": 2
     },
     {
       "name": "PHP",
@@ -38,10 +52,6 @@
       "count": 1
     },
     {
-      "name": "JavaScript",
-      "count": 1
-    },
-    {
       "name": "Rust",
       "count": 1
     },
@@ -52,11 +62,11 @@
   ],
   "activity": {
     "kind": "public-events",
-    "label": "直近に取得できた公開イベント",
+    "label": "個人＋組織の公開イベント・取得分",
     "since": "2026-10-05",
     "until": "2026-10-30",
     "complete": false,
-    "eventCount": 21,
+    "eventCount": 22,
     "days": [
       {
         "date": "2026-10-05",
@@ -160,31 +170,31 @@
       },
       {
         "date": "2026-10-30",
-        "count": 7
+        "count": 8
       }
     ]
   },
   "projects": [
     {
-      "name": "www",
+      "name": "crudfifth/crudfifth",
+      "description": "",
+      "url": "https://github.com/crudfifth/crudfifth",
+      "stars": 1,
+      "language": "JavaScript"
+    },
+    {
+      "name": "crudfifth/www",
       "description": "",
       "url": "https://github.com/crudfifth/www",
       "stars": 1,
       "language": ""
     },
     {
-      "name": "book-app",
+      "name": "CRUD5thOfficial/crud5th-web",
       "description": "",
-      "url": "https://github.com/crudfifth/book-app",
+      "url": "https://github.com/CRUD5thOfficial/crud5th-web",
       "stars": 0,
-      "language": ""
-    },
-    {
-      "name": "sentinel",
-      "description": "",
-      "url": "https://github.com/crudfifth/sentinel",
-      "stars": 1,
-      "language": "Ada"
+      "language": "TypeScript"
     }
   ]
 }

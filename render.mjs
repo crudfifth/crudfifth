@@ -23,14 +23,19 @@ function requireDate(value, label) {
 }
 
 export function validateProfile(profile) {
-  if (!profile || profile.schemaVersion !== 1) throw new TypeError('Unsupported profile schema');
+  if (!profile || profile.schemaVersion !== 2) throw new TypeError('Unsupported profile schema');
   requireText(profile.owner, 'owner');
+  if (profile.owner !== 'crudfifth' || !Array.isArray(profile.sources) || profile.sources.length !== 2
+    || profile.sources[0]?.login !== 'crudfifth' || profile.sources[0]?.type !== 'User'
+    || profile.sources[1]?.login !== 'CRUD5thOfficial' || profile.sources[1]?.type !== 'Organization') {
+    throw new TypeError('Invalid profile sources');
+  }
   if (!profile.owner || !Number.isFinite(Date.parse(profile.generatedAt))) throw new TypeError('Invalid profile timestamp or owner');
   for (const name of ['name', 'bio', 'url']) requireText(profile.profile?.[name], `profile.${name}`);
   for (const name of ['followers', 'following', 'publicRepos']) requireCount(profile.profile?.[name], `profile.${name}`);
   for (const name of ['publicCount', 'originalCount', 'stars', 'forks']) requireCount(profile.repositories?.[name], `repositories.${name}`);
   if (profile.repositories.originalCount > profile.repositories.publicCount) throw new TypeError('Original count exceeds public count');
-  if (profile.profile.publicRepos !== profile.repositories.publicCount) throw new TypeError('Public repository counts differ');
+  if (profile.profile.publicRepos > profile.repositories.publicCount) throw new TypeError('Personal repository count exceeds combined public count');
   if (!Array.isArray(profile.languages) || profile.languages.length > 100) throw new TypeError('Invalid languages');
   const languageNames = new Set();
   let classifiedCount = 0;
@@ -43,7 +48,7 @@ export function validateProfile(profile) {
   }
   if (classifiedCount > profile.repositories.originalCount) throw new TypeError('Language counts exceed original repositories');
   const activity = profile.activity;
-  if (!activity || activity.kind !== 'public-events' || typeof activity.complete !== 'boolean') throw new TypeError('Invalid activity scope');
+  if (!activity || activity.kind !== 'public-events' || activity.complete !== false) throw new TypeError('Invalid activity scope');
   requireText(activity.label, 'activity.label');
   requireCount(activity.eventCount, 'activity.eventCount');
   if (!Array.isArray(activity.days) || activity.days.length > 370) throw new TypeError('Invalid activity days');
@@ -163,9 +168,9 @@ ${textNode(34, 214, projectNames ? `RECENT REPOS  ${truncateText(projectNames, 5
 function renderStats(profile) {
   const metrics = [
     ['公開repo', profile.repositories.publicCount], ['オリジナルrepo', profile.repositories.originalCount],
-    ['所有repoのstars', profile.repositories.stars], ['フォロワー', profile.profile.followers],
+    ['所有repoのstars', profile.repositories.stars], ['個人フォロワー', profile.profile.followers],
   ];
-  return `<g data-section="stats">${sectionLabel('01', 'GITHUB SNAPSHOT', 253)}
+  return `<g data-section="stats">${sectionLabel('01', 'GITHUB SNAPSHOT', 253, 'crudfifth + CRUD5thOfficial')}
 ${metrics.map(([label, count], index) => `<g class="stat-reveal" style="--delay:${index * 0.12}s">${textNode(34 + index * 186, 309, numberFormat.format(count), 'mono metric')}${textNode(36 + index * 186, 332, label, 'metric-label muted')}</g>`).join('')}
 </g>`;
 }
@@ -190,7 +195,7 @@ ${points.filter((point) => point.count > 0).map((point, index) => `<circle class
 <path d="M35 458 H765" class="rule"/>
 ${chart}
 ${textNode(35, 481, range, 'mono muted', 'font-size="11"')}
-${textNode(765, 481, '公開イベント・取得分', 'muted', 'text-anchor="end" font-size="11"')}
+${textNode(765, 481, '個人＋組織の公開イベント・取得分', 'muted', 'text-anchor="end" font-size="11"')}
 </g>`;
 }
 
@@ -210,7 +215,7 @@ ${textNode(x + 345, baseline, language.count, 'mono muted', 'text-anchor="end" f
   }).join('');
   const empty = profile.languages.length ? '' : textNode(35, y + 65, '主言語を判定できたrepoなし', 'muted');
   return `<g data-section="languages">${sectionLabel('03', 'LANGUAGES', y)}
-${textNode(35, y + 26, '主言語別repo件数 · 所有する公開・非fork repo', 'muted', 'font-size="12"')}
+${textNode(35, y + 26, '主言語別repo件数 · 個人＋組織の公開・非fork repo', 'muted', 'font-size="12"')}
 ${textNode(765, y + 26, `判定済み ${classifiedCount} / ${profile.repositories.originalCount} · 未判定 ${unclassifiedCount}`, 'muted', 'font-size="12" text-anchor="end"')}
 ${rows}${empty}
 </g>`;
@@ -234,7 +239,7 @@ export function renderProfileSvg(input, { theme = 'dark' } = {}) {
   const languageRows = Math.max(1, Math.ceil(profile.languages.length / 2));
   const stackY = languageY + 82 + languageRows * 35;
   const height = stackY + 102;
-  const description = `${profile.profile.bio}. ${profile.projects.map((project) => `${project.name}: ${project.description}`).join('; ')}. 言語は主言語別repo件数。活動は公開イベント取得分。`;
+  const description = `${profile.profile.bio}. ${profile.projects.map((project) => `${project.name}: ${project.description}`).join('; ')}. crudfifth + CRUD5thOfficialの公開データ。言語は公開・非fork repoの主言語別件数。活動は個人＋組織の公開イベント取得分。フォロワーは個人の値。`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="${height}" viewBox="0 0 800 ${height}" role="img" aria-labelledby="profile-title profile-description">
 <title id="profile-title">${xmlEscape(`CRUD5th — ${profile.profile.name}`)}</title>
 <desc id="profile-description">${xmlEscape(description)}</desc>

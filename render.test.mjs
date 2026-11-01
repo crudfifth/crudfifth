@@ -13,7 +13,19 @@ import { createPreviewServer } from './serve.mjs';
 
 const runFile = promisify(execFile);
 const profileRoot = path.dirname(fileURLToPath(import.meta.url));
-const profile = JSON.parse(await readFile(path.join(profileRoot, 'data/profile.json'), 'utf8'));
+const profile = {
+  schemaVersion: 2, owner: 'crudfifth', generatedAt: '2026-11-02T00:00:00Z',
+  sources: [{ login: 'crudfifth', type: 'User' }, { login: 'CRUD5thOfficial', type: 'Organization' }],
+  profile: { name: 'Fixture Name', bio: 'Profile fixture', followers: 4, following: 5,
+    publicRepos: 5, url: 'https://github.com/crudfifth' },
+  repositories: { publicCount: 8, originalCount: 6, stars: 20, forks: 3 },
+  languages: [{ name: 'TypeScript', count: 3 }, { name: 'Rust', count: 1 }],
+  activity: { kind: 'public-events', label: '個人＋組織の公開イベント・取得分', complete: false,
+    since: '2026-10-29', until: '2026-10-30', eventCount: 3,
+    days: [{ date: '2026-10-29', count: 1 }, { date: '2026-10-30', count: 2 }] },
+  projects: [{ name: 'CRUD5thOfficial/organization-project', description: '', stars: 2,
+    language: 'TypeScript', url: 'https://github.com/CRUD5thOfficial/organization-project' }],
+};
 
 async function withTempDir(run) {
   const rootDir = await mkdtemp(path.join(tmpdir(), 'profile-render-test-'));
@@ -38,16 +50,20 @@ test('five sections animate and reduced motion preserves the final readable stat
   assert.doesNotMatch(svg, /<rect[^>]+(?:width="800"|height="\d+")[^>]+fill="(?!none)/);
 });
 
-test('real counts keep their measured scope and missing-language denominator', () => {
+test('combined counts identify both subjects and keep the personal follower scope', () => {
   const svg = renderProfileSvg(profile);
   assert.match(svg, /公開イベント・取得分/);
   assert.doesNotMatch(svg, /年間貢献数ではありません|SELF-HOSTED SVG/);
   assert.match(svg, /主言語別repo件数/);
-  assert.match(svg, /判定済み 13 \/ 290/);
-  assert.match(svg, /未判定 277/);
-  assert.match(svg, />291<|>291<\/tspan>/);
-  assert.match(svg, />286<|>286<\/tspan>/);
-  assert.match(svg, /21 events/);
+  assert.match(svg, /crudfifth \+ CRUD5thOfficial/);
+  assert.match(svg, /個人フォロワー/);
+  assert.match(svg, /個人＋組織の公開イベント・取得分/);
+  assert.match(svg, /個人＋組織の公開・非fork repo/);
+  assert.match(svg, /判定済み 4 \/ 6/);
+  assert.match(svg, /未判定 2/);
+  assert.match(svg, />8<|>8<\/tspan>/);
+  assert.match(svg, />20<|>20<\/tspan>/);
+  assert.match(svg, /3 events/);
 });
 
 test('untrusted profile, language and project strings cannot introduce XML or CSS', () => {
@@ -66,9 +82,10 @@ test('untrusted profile, language and project strings cannot introduce XML or CS
 
 test('actual collector output with zero events and empty dates renders explicit empty state', async () => {
   await withTempDir(async (rootDir) => {
-    const publicProfile = { login: 'crudfifth', name: 'Collector fixture', bio: null,
+    const publicProfile = { login: 'crudfifth', type: 'User', name: 'Collector fixture', bio: null,
       followers: 0, following: 0, public_repos: 0, html_url: 'https://github.com/crudfifth' };
-    const fetchImpl = async (url) => Response.json(new URL(url).pathname === '/users/crudfifth' ? publicProfile : []);
+    const fetchImpl = async (url) => Response.json(new URL(url).pathname === '/users/crudfifth' ? publicProfile
+      : new URL(url).pathname === '/orgs/CRUD5thOfficial' ? { login: 'CRUD5thOfficial', type: 'Organization', public_repos: 0 } : []);
     const empty = await collectProfile({ fetchImpl, outputPath: path.join(rootDir, 'empty-profile.json') });
     assert.equal(empty.activity.since, '');
     assert.equal(empty.activity.until, '');
@@ -115,6 +132,13 @@ test('inconsistent counts, unknown theme and invalid numeric values fail explici
     (input) => { input.repositories.originalCount = 1; },
     (input) => { input.profile.followers = -1; },
     (input) => { input.profile.bio = {}; },
+    (input) => { input.schemaVersion = 1; },
+    (input) => { input.sources.pop(); },
+    (input) => { input.sources.reverse(); },
+    (input) => { input.sources[1].type = 'User'; },
+    (input) => { input.owner = 'other'; },
+    (input) => { input.profile.publicRepos = 9; },
+    (input) => { input.activity.complete = true; },
   ]) {
     const input = structuredClone(profile);
     mutation(input);
@@ -123,10 +147,12 @@ test('inconsistent counts, unknown theme and invalid numeric values fail explici
   assert.throws(() => renderProfileSvg(profile, { theme: 'other' }));
 });
 
-test('CLI generates both themed images from the real input at the documented entry point', async () => {
+test('CLI generates both themed images from schema2 input at the documented entry point', async () => {
   await withTempDir(async (outputDir) => {
+    const inputPath = path.join(outputDir, 'profile.json');
+    await writeFile(inputPath, JSON.stringify(profile));
     const { stdout } = await runFile(process.execPath, [path.join(profileRoot, 'render.mjs'),
-      '--input', path.join(profileRoot, 'data/profile.json'), '--output', outputDir]);
+      '--input', inputPath, '--output', outputDir]);
     assert.match(stdout, /profile-dark.svg/);
     for (const theme of ['dark', 'light']) {
       const svg = await readFile(path.join(outputDir, `assets/profile-${theme}.svg`), 'utf8');

@@ -3,7 +3,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/profile-dark.svg">
   <source media="(prefers-color-scheme: light)" srcset="assets/profile-light.svg">
-  <img src="assets/profile-light.svg" width="800" alt="CRUD5th profile: introduction, GitHub public statistics, retrieved public events, repositories by primary language, and tech stack">
+  <img src="assets/profile-light.svg" width="800" alt="CRUD5th profile: introduction, crudfifth + CRUD5thOfficial public statistics and retrieved public events, public non-fork repositories by primary language, personal followers, and tech stack">
 </picture>
 
 ## Tech Stack

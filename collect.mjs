@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const owner = 'crudfifth';
+const sources = [{ login: owner, type: 'User' }, { login: 'CRUD5thOfficial', type: 'Organization' }];
 const apiOrigin = 'https://api.github.com';
 const defaultOutputPath = fileURLToPath(new URL('./data/profile.json', import.meta.url));
 
@@ -55,12 +56,18 @@ function validateProfile(profile) {
   requireCondition(profile.html_url === `https://github.com/${owner}`, 'profile URL');
 }
 
-function validateRepository(repository) {
+function validateSource(metadata, source) {
+  requireCondition(metadata?.login?.toLowerCase() === source.login.toLowerCase(), 'source owner');
+  requireCondition(metadata.type === source.type, 'source type');
+  requireCondition(isCount(metadata.public_repos), 'source public repository count');
+}
+
+function validateRepository(repository, source) {
   requireCondition(isCount(repository?.id), 'repository ID');
-  requireCondition(repository.owner?.login?.toLowerCase() === owner && repository.private === false, 'public repository owner');
+  requireCondition(repository.owner?.login?.toLowerCase() === source.login.toLowerCase() && repository.private === false, 'public repository owner');
   requireCondition(typeof repository.fork === 'boolean', 'repository fork flag');
   requireCondition(typeof repository.name === 'string' && repository.name.length > 0, 'repository name');
-  requireCondition(repository.html_url === `https://github.com/${owner}/${repository.name}`, 'repository URL');
+  requireCondition(repository.html_url === `https://github.com/${source.login}/${repository.name}`, 'repository URL');
   requireCondition(isNullableString(repository.description) && isNullableString(repository.language), 'repository text fields');
   requireCondition(isCount(repository.stargazers_count) && isCount(repository.forks_count), 'repository counts');
   requireCondition(isTimestamp(repository.updated_at), 'repository update timestamp');
@@ -75,12 +82,8 @@ function buildProfile(profile, repositories, events, generatedAt) {
     }
   }
 
-  const eventIds = new Set();
   const dayCounts = new Map();
   for (const event of events) {
-    requireCondition(typeof event?.id === 'string' && !eventIds.has(event.id), 'public event ID');
-    requireCondition(event.public === true && isTimestamp(event.created_at), 'public event timestamp');
-    eventIds.add(event.id);
     const date = new Date(event.created_at).toISOString().slice(0, 10);
     dayCounts.set(date, (dayCounts.get(date) ?? 0) + 1);
   }
@@ -96,8 +99,9 @@ function buildProfile(profile, repositories, events, generatedAt) {
   }
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     owner,
+    sources: sources.map((source) => ({ ...source })),
     generatedAt,
     profile: {
       name: profile.name ?? profile.login,
@@ -117,16 +121,16 @@ function buildProfile(profile, repositories, events, generatedAt) {
       .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, 'en')),
     activity: {
       kind: 'public-events',
-      label: events.length ? '直近に取得できた公開イベント' : '取得できた公開イベントなし',
+      label: events.length ? '個人＋組織の公開イベント・取得分' : '取得できた公開イベントなし',
       since,
       until,
       complete: false,
       eventCount: events.length,
       days,
     },
-    projects: originals.toSorted((left, right) => Date.parse(right.updated_at) - Date.parse(left.updated_at) || left.name.localeCompare(right.name, 'en'))
+    projects: originals.toSorted((left, right) => Date.parse(right.updated_at) - Date.parse(left.updated_at) || `${left.owner.login}/${left.name}`.localeCompare(`${right.owner.login}/${right.name}`, 'en'))
       .slice(0, 3).map((repository) => ({
-        name: repository.name,
+        name: `${repository.owner.login}/${repository.name}`,
         description: repository.description ?? '',
         url: repository.html_url,
         stars: repository.stargazers_count,
@@ -146,18 +150,17 @@ async function writeProfileAtomically(outputPath, profile) {
   }
 }
 
-export async function collectProfile({ fetchImpl = fetch, outputPath = defaultOutputPath, timeoutMs = 15_000, now = () => new Date() } = {}) {
-  const { body: profile } = await fetchJson(`/users/${owner}`, fetchImpl, timeoutMs);
-  validateProfile(profile);
+async function collectRepositories(source, publicRepoCount, fetchImpl, timeoutMs) {
   const repositories = [];
   const repositoryIds = new Set();
-  const maximumPages = Math.ceil(profile.public_repos / 100) + 1;
+  const maximumPages = Math.ceil(publicRepoCount / 100) + 1;
+  const basePath = source.type === 'User' ? `/users/${source.login}/repos?type=owner` : `/orgs/${source.login}/repos?type=public`;
   let reachedLastPage = false;
   for (let page = 1; page <= maximumPages; page += 1) {
-    const { body: pageRepositories, link } = await fetchJson(`/users/${owner}/repos?type=owner&sort=full_name&direction=asc&per_page=100&page=${page}`, fetchImpl, timeoutMs);
+    const { body: pageRepositories, link } = await fetchJson(`${basePath}&sort=full_name&direction=asc&per_page=100&page=${page}`, fetchImpl, timeoutMs);
     requireCondition(Array.isArray(pageRepositories) && pageRepositories.length <= 100, 'repository page');
     for (const repository of pageRepositories) {
-      validateRepository(repository);
+      validateRepository(repository, source);
       requireCondition(!repositoryIds.has(repository.id), 'duplicate repository across pages');
       repositoryIds.add(repository.id);
       repositories.push(repository);
@@ -169,10 +172,31 @@ export async function collectProfile({ fetchImpl = fetch, outputPath = defaultOu
     }
     requireCondition(pageRepositories.length === 100, 'incomplete repository page');
   }
-  requireCondition(reachedLastPage && repositories.length === profile.public_repos, 'repository page count does not match public_repos; retry a fresh collection');
-  const { body: events } = await fetchJson(`/users/${owner}/events/public?per_page=100&page=1`, fetchImpl, timeoutMs);
-  requireCondition(Array.isArray(events) && events.length <= 100, 'public events page');
-  const collectedProfile = buildProfile(profile, repositories, events, now().toISOString());
+  requireCondition(reachedLastPage && repositories.length === publicRepoCount, 'repository page count does not match public_repos; retry a fresh collection');
+  return repositories;
+}
+
+export async function collectProfile({ fetchImpl = fetch, outputPath = defaultOutputPath, timeoutMs = 15_000, now = () => new Date() } = {}) {
+  const { body: profile } = await fetchJson(`/users/${owner}`, fetchImpl, timeoutMs);
+  validateProfile(profile);
+  const repositoriesById = new Map();
+  const eventsById = new Map();
+  for (const source of sources) {
+    const metadata = source.type === 'User' ? profile : (await fetchJson(`/orgs/${source.login}`, fetchImpl, timeoutMs)).body;
+    validateSource(metadata, source);
+    for (const repository of await collectRepositories(source, metadata.public_repos, fetchImpl, timeoutMs)) {
+      repositoriesById.set(repository.id, repository);
+    }
+    const eventsPath = source.type === 'User' ? `/users/${source.login}/events/public` : `/orgs/${source.login}/events`;
+    const { body: events } = await fetchJson(`${eventsPath}?per_page=100&page=1`, fetchImpl, timeoutMs);
+    requireCondition(Array.isArray(events) && events.length <= 100, 'public events page');
+    for (const event of events) {
+      requireCondition(typeof event?.id === 'string' && event.id.length > 0, 'public event ID');
+      requireCondition(event.public === true && isTimestamp(event.created_at), 'public event timestamp');
+      eventsById.set(event.id, event);
+    }
+  }
+  const collectedProfile = buildProfile(profile, [...repositoriesById.values()], [...eventsById.values()], now().toISOString());
   await writeProfileAtomically(outputPath, collectedProfile);
   return collectedProfile;
 }
