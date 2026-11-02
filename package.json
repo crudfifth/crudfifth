@@ -4,8 +4,8 @@
   "type": "module",
   "engines": { "node": ">=22" },
   "scripts": {
-    "render": "node render.mjs",
-    "test": "node --test collect.test.mjs render.test.mjs",
+    "render": "node render.mjs && node render-details.mjs",
+    "test": "node --test collect.test.mjs render.test.mjs render-details.test.mjs",
     "serve": "node serve.mjs"
   }
 }
