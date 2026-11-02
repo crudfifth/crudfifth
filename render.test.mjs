@@ -36,14 +36,15 @@ async function withTempDir(run) {
   try { await run(rootDir); } finally { await rm(rootDir, { recursive: true, force: true }); }
 }
 
-test('all five sections have continuous decorative motion and readable reduced motion', () => {
+test('profile keeps hero and data motion with readable reduced motion', () => {
   const svg = renderProfileSvg(profile, { theme: 'dark' });
   for (const section of ['intro', 'stats', 'activity', 'languages', 'stack']) {
     assert.match(svg, new RegExp(`data-section="${section}"`));
   }
-  for (const motion of ['rail-flow', 'neon-pulse', 'chromatic-shift', 'title-scan', 'activity-trail', 'bar-glint', 'stack-glint']) {
+  for (const motion of ['rail-flow', 'profile-glow-pulse', 'chromatic-shift', 'title-scan', 'activity-trail', 'bar-glint']) {
     assert.match(svg, new RegExp(`@keyframes ${motion}`));
   }
+  assert.doesNotMatch(svg, /metric-(?:circuit|glow)|stack-glint|neon-pulse|section-label-\d+-glow-blur/);
   assert.match(svg, /prefers-reduced-motion: reduce/);
   assert.match(svg, /animation: none !important/);
   assert.match(svg, /opacity: 1 !important/);
@@ -276,14 +277,18 @@ test('a README preparation failure preserves both previous assets', async () => 
 });
 
 
-test('motion keeps actual bar widths and does not animate any data label or circle', () => {
+test('motion keeps actual bar widths while snapshot and small stack stay sharp and static', () => {
   const svg = renderProfileSvg(profile);
   const bars = [...svg.matchAll(/<rect class="bar"[^>]*width="([\d.]+)"/g)].map((match) => Number(match[1]));
   assert.deepEqual(bars, [258.75, 86.25]);
   assert.doesNotMatch(svg, /\.(?:bar|point|metric|metric-label|intro-type|stat-reveal|stack-reveal)\{[^}]*animation:/);
   assert.match(svg, /class="bar-glint decorative"/);
-  assert.match(svg, /class="metric-circuit decorative"/);
-  assert.match(svg, /class="stack-glint decorative"/);
+  for (const section of ['stats', 'stack']) {
+    const content = svg.match(new RegExp(`<g data-section="${section}">([\\s\\S]*?)\\n</g>`))?.[1];
+    assert.ok(content, `missing ${section}`);
+    assert.doesNotMatch(content, /<path(?![^>]*class="rule")|<filter|decorative|animation|glow|halo/);
+  }
+  assert.match(svg, /<path d="M32 350 H768" class="rule"\/>/);
   assert.match(svg, /aria-hidden="true"/);
   assert.doesNotMatch(svg, />[^<]*(?:REALTIME|LIVE)[^<]*</);
 });

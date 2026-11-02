@@ -135,7 +135,7 @@ function glowLayer(content, id, phase, bounds, className = '') {
 
 function sectionLabel(index, label, y, trailing = '') {
   const content = `${textNode(32, y, index, 'mono accent eyebrow')}${textNode(67, y, label, 'mono eyebrow muted')}${trailing ? textNode(768, y, trailing, 'mono eyebrow muted', 'text-anchor="end"') : ''}`;
-  return `${glowLayer(content, `section-label-${index}`, Number(index) * 0.7, [20, y - 24, 760, 40], 'profile-glow-text')}${content}`;
+  return content;
 }
 
 function motionStyles(theme) {
@@ -155,25 +155,18 @@ svg{font-size:14px}text{font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic
 .title-ghost{fill:var(--accent);opacity:.34;animation:chromatic-shift 3.8s ease-in-out infinite alternate;clip-path:inset(24% 0 52% 0)}
 .title-ghost.secondary{fill:var(--secondary);animation-delay:-1.9s;animation-direction:alternate-reverse;clip-path:inset(67% 0 13% 0)}
 .title-scan{fill:none;stroke:var(--accent);stroke-width:1;stroke-dasharray:28 55 2 16;animation:title-scan 3.3s linear infinite;opacity:.7}
-.metric-circuit{fill:none;stroke:var(--accent);stroke-width:1.4;stroke-dasharray:.1 .9;animation:rail-flow 3.7s linear infinite,neon-pulse 2.8s ease-in-out infinite alternate;animation-delay:var(--delay,0s)}
-.metric-glow{filter:url(#metric-glow-blur);animation:metric-glow-pulse 4.2s ease-in-out infinite;animation-delay:var(--delay,0s)}
-.metric-glow-frame{fill:none;stroke:var(--accent);stroke-width:3.5}.metric-glow-value{fill:var(--accent)}
 .profile-glow{--glow-low:.16;--glow-peak:.82;animation:profile-glow-pulse 4.2s ease-in-out infinite;animation-delay:var(--delay,0s)}
 .profile-glow text{fill:var(--accent);stroke:var(--accent);stroke-width:.45}
 .profile-glow-text{--glow-low:.1;--glow-peak:.62}.profile-glow-strong{--glow-low:.28;--glow-peak:1}
 .profile-glow-line,.profile-glow-graph{fill:none;stroke:var(--accent);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}.profile-glow-bar{fill:var(--accent)}
 .activity-trail{fill:none;stroke:var(--secondary);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.035 .965;animation:activity-trail 5.6s linear infinite;opacity:.88}
 .bar-glint{fill:none;stroke:var(--secondary);stroke-width:1;stroke-linecap:round;stroke-dasharray:.08 .92;animation:bar-glint 3.6s linear infinite;animation-delay:var(--delay,0s);opacity:.7}
-.stack-glint{fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-dasharray:.24 .76;animation:stack-glint 2.7s linear infinite;animation-delay:var(--delay,0s)}
 @keyframes rail-flow{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
-@keyframes neon-pulse{from{opacity:.38}to{opacity:1}}
-@keyframes metric-glow-pulse{0%,100%{opacity:.22}50%{opacity:.85}}
 @keyframes profile-glow-pulse{0%,100%{opacity:var(--glow-low)}50%{opacity:var(--glow-peak)}}
 @keyframes chromatic-shift{0%{transform:translate(-1.4px,0)}50%{transform:translate(.7px,.5px)}100%{transform:translate(1.4px,0)}}
 @keyframes title-scan{from{stroke-dashoffset:101}to{stroke-dashoffset:0}}
 @keyframes activity-trail{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 @keyframes bar-glint{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
-@keyframes stack-glint{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 @media(prefers-reduced-motion: reduce){*,*::before,*::after{animation: none !important;opacity: 1 !important;transform:none !important;clip-path: none !important;stroke-dashoffset: 0 !important}.decorative{display:none !important}}
 `;
 }
@@ -218,18 +211,12 @@ function renderStats(profile) {
     ['公開repoのstars', profile.repositories.stars], ['個人フォロワー', profile.profile.followers],
   ];
   return `<g data-section="stats">${sectionLabel('01', 'GITHUB SNAPSHOT', 253, 'crudfifth + CRUD5thOfficial')}
-<defs><filter id="metric-glow-blur" x="-25%" y="-50%" width="150%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
 ${metrics.map(([label, count], index) => {
     const x = 34 + index * 186;
     const contentX = x + 12;
-    const labels = textNode(contentX, 333, label, 'metric-label muted');
-    const circuit = `M${x} 281 V265 H${x + 18} M${x + 144} 265 H${x + 161} V281 M${x + 161} 327 V343 H${x + 143} M${x + 18} 343 H${x} V327`;
-    return `<g><g class="metric-glow decorative" style="--delay:-${(index * 0.8).toFixed(1)}s" aria-hidden="true"><path d="${circuit}" class="metric-glow-frame"/>${textNode(contentX, 310, numberFormat.format(count), 'mono metric metric-glow-value')}</g>
-${textNode(contentX, 310, numberFormat.format(count), 'mono metric')}${glowLayer(labels, `metric-label-${index}`, index * 0.8, [contentX - 12, 309, 180, 40], 'profile-glow-text')}${labels}
-<path d="${circuit}" class="rule decorative" aria-hidden="true"/>
-<path d="${circuit}" class="metric-circuit decorative" pathLength="1" style="--delay:-${(index * 0.7).toFixed(1)}s" aria-hidden="true"/></g>`;
+    return `<g>${textNode(contentX, 310, numberFormat.format(count), 'mono metric')}${textNode(contentX, 333, label, 'metric-label muted')}</g>`;
   }).join('')}
-${sectionRail(350, 1.7)}
+<path d="M32 350 H768" class="rule"/>
 </g>`;
 }
 
@@ -289,12 +276,8 @@ function renderStack(y) {
   return `<g data-section="stack">${sectionLabel('04', 'TECH STACK', y)}
 ${stackNames.map((name, index) => {
     const labels = `${textNode(x, y + 38, name, 'mono', 'font-size="16"')}${index < stackNames.length - 1 ? textNode(x + textWidth(name, 16, true) + 14, y + 38, '/', 'mono accent') : ''}`;
-    const underline = `<path d="M${x} ${y + 47} h${textWidth(name, 16, true).toFixed(2)}" class="profile-glow-line"/>`;
-    const element = `<g>${glowLayer(`${labels}${underline}`, `stack-${name.toLowerCase()}`, index * 0.43, [x - 12, y + 10, textWidth(name, 16, true) + 54, 49])}${labels}
-<path d="M${x} ${y + 47} h${textWidth(name, 16, true).toFixed(2)}" class="rule decorative" aria-hidden="true"/>
-<path d="M${x} ${y + 47} h${textWidth(name, 16, true).toFixed(2)}" class="stack-glint decorative" pathLength="1" style="--delay:-${(index * 0.43).toFixed(2)}s" aria-hidden="true"/></g>`;
     x += textWidth(name, 16, true) + 42;
-    return element;
+    return labels;
   }).join('')}
 </g>`;
 }

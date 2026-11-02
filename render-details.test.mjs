@@ -48,6 +48,14 @@ test('render CLI produces all 30 themed SVGs and keeps the complete readable pro
       assert.match(svg, /Web interfaces\./);
       assert.match(svg, /Low-level systems\./);
       assert.match(svg, /low-level OS development/);
+      const about = svg.match(/<g data-section="about">([\s\S]*?)<g data-section="connect">/)?.[1];
+      assert.ok(about, 'missing About Me');
+      assert.doesNotMatch(about, /halo|decorative|<filter|class="(?:notch|rail)|animation/);
+      for (const y of [530, 793]) assert.match(svg, new RegExp(`<path d="M32 ${y} H768" class="frame"/>`));
+      assert.doesNotMatch(svg, /section-rail-glow-|M32 (?:524|787) V|M32 (?:530|793) H768" pathLength/);
+      for (const label of ['TECH STACK', 'ABOUT ME', 'CONNECT']) {
+        assert.doesNotMatch(svg, new RegExp(`<g class="halo[^>]*>[^<]*(?:<text[^>]*>[^<]*</text>)*<text[^>]*>${label}</text>`));
+      }
       assert.doesNotMatch(svg, /aspiring|rather than|expanding into|Noarium|test|generator/i);
     }
   });

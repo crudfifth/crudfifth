@@ -1,16 +1,16 @@
 # Welcome to CRUD5th's GitHub Profile
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-dark.svg?v=929379884707">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-light.svg?v=dee3ef0b79fc">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-light.svg?v=dee3ef0b79fc" width="800" alt="CRUD5th profile: introduction, crudfifth + CRUD5thOfficial public repository statistics and crudfifth personal daily contributions across public and private activity over the last 365 days, language code-byte percentages across public and private non-fork repositories, personal followers, and tech stack">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-dark.svg?v=23e6e654a60a">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-light.svg?v=de67c7495909">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-light.svg?v=de67c7495909" width="800" alt="CRUD5th profile: introduction, crudfifth + CRUD5thOfficial public repository statistics and crudfifth personal daily contributions across public and private activity over the last 365 days, language code-byte percentages across public and private non-fork repositories, personal followers, and tech stack">
 </picture>
 
 <!-- PROFILE DETAILS START -->
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-details-dark.svg?v=e5b345204ad4">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-details-light.svg?v=de629039fb5c">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-details-light.svg?v=de629039fb5c" width="800" alt="Tech Stack: Elixir, Ada, Zig, Rust, TypeScript, Python and a broad web, server and systems toolkit. About Tsunami / CRUD5th: full-stack web, AI &amp; LLMs and low-level OS development. Design → Build → Release → Operate. Connect below.">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-details-dark.svg?v=a5beca43318c">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-details-light.svg?v=6ed9108ec2e2">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-details-light.svg?v=6ed9108ec2e2" width="800" alt="Tech Stack: Elixir, Ada, Zig, Rust, TypeScript, Python and a broad web, server and systems toolkit. About Tsunami / CRUD5th: full-stack web, AI &amp; LLMs and low-level OS development. Design → Build → Release → Operate. Connect below.">
 </picture>
 
 <a href="https://x.com/CRUD5th">

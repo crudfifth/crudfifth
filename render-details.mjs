@@ -81,14 +81,7 @@ ${content}
 }
 
 function sectionLabel(number, label, y, trailing = '') {
-  return glow(`${textNode(32, y, number, 'mono eyebrow accent')}${textNode(69, y, label, 'mono eyebrow muted')}${trailing ? textNode(768, y, trailing, 'mono group-label muted', 'text-anchor="end"') : ''}`, Number(number) * .6);
-}
-
-function sectionRail(y, phase) {
-  const line = `<path d="M32 ${y} H768" class="frame"/>`;
-  const filterId = `section-rail-glow-${y}`;
-  const halo = `<defs><filter id="${filterId}" filterUnits="userSpaceOnUse" x="20" y="${y - 12}" width="760" height="24" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs><g class="halo decorative" style="--delay:-${phase}s;filter:url(#${filterId})" aria-hidden="true">${line}</g>`;
-  return `${halo}${line}<g class="decorative" aria-hidden="true" style="--delay:-${phase}s"><path d="M32 ${y - 6} V${y} H50 M750 ${y} H768 V${y + 6}" class="notch"/><path d="M32 ${y} H768" pathLength="1" class="rail"/><path d="M32 ${y} H768" pathLength="1" class="rail secondary"/></g>`;
+  return `${textNode(32, y, number, 'mono eyebrow accent')}${textNode(69, y, label, 'mono eyebrow muted')}${trailing ? textNode(768, y, trailing, 'mono group-label muted', 'text-anchor="end"') : ''}`;
 }
 
 function renderTechnologyTiles() {
@@ -126,16 +119,16 @@ ${sectionLabel('05', 'TECH STACK', 34, 'LANGUAGES / FRAMEWORKS / TOOLS')}
 ${glow(textNode(32, 84, 'Across the stack.', 'heading'), .2)}
 ${renderTechnologyTiles()}
 ${renderStackGroups()}
-${sectionRail(530, 1.6)}
+<path d="M32 530 H768" class="frame"/>
 </g>
 <g data-section="about">
 ${sectionLabel('06', 'ABOUT ME', 565, 'TSUNAMI / CRUD5th')}
-${glow(textNode(32, 616, 'Web interfaces.', 'about-heading') + textNode(301, 616, 'Low-level systems.', 'about-heading'), 2.2)}
-${glow(textNode(32, 657, "I'm Tsunami, building as CRUD5th.", 'body'), 2.3, 'soft')}
-${glow(textNode(32, 692, 'I work across full-stack web development, AI & LLMs,', 'body'), 2.9, 'soft')}
-${glow(textNode(32, 723, 'and low-level OS development.', 'body'), 3.5, 'soft')}
-${['Design', 'Build', 'Release', 'Operate'].map((label, index) => `${glow(textNode(32 + index * 190, 773, label, 'mono process'), index * .7)}${index < 3 ? textNode(174 + index * 190, 773, '→', 'mono process accent') : ''}`).join('')}
-${sectionRail(793, 3.2)}
+${textNode(32, 616, 'Web interfaces.', 'about-heading')}${textNode(301, 616, 'Low-level systems.', 'about-heading')}
+${textNode(32, 657, "I'm Tsunami, building as CRUD5th.", 'body')}
+${textNode(32, 692, 'I work across full-stack web development, AI & LLMs,', 'body')}
+${textNode(32, 723, 'and low-level OS development.', 'body')}
+${['Design', 'Build', 'Release', 'Operate'].map((label, index) => `${textNode(32 + index * 190, 773, label, 'mono process')}${index < 3 ? textNode(174 + index * 190, 773, '→', 'mono process accent') : ''}`).join('')}
+<path d="M32 793 H768" class="frame"/>
 </g>
 <g data-section="connect">${sectionLabel('07', 'CONNECT', 833, 'FIND ME ACROSS THE WEB')}</g>`;
   return svgDocument(800, 856, 'Tsunami / CRUD5th — Tech Stack, About Me and Connect', 'Elixir, Ada, Zig, Rust, TypeScript and Python at the core. Web interfaces, server frameworks, systems and tools. Tsunami builds as CRUD5th across full-stack web development, AI & LLMs, and low-level OS development. Design, Build, Release, Operate. Social links follow below.', theme, content);

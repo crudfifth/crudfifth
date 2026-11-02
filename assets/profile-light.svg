@@ -14,25 +14,18 @@ svg{font-size:14px}text{font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic
 .title-ghost{fill:var(--accent);opacity:.34;animation:chromatic-shift 3.8s ease-in-out infinite alternate;clip-path:inset(24% 0 52% 0)}
 .title-ghost.secondary{fill:var(--secondary);animation-delay:-1.9s;animation-direction:alternate-reverse;clip-path:inset(67% 0 13% 0)}
 .title-scan{fill:none;stroke:var(--accent);stroke-width:1;stroke-dasharray:28 55 2 16;animation:title-scan 3.3s linear infinite;opacity:.7}
-.metric-circuit{fill:none;stroke:var(--accent);stroke-width:1.4;stroke-dasharray:.1 .9;animation:rail-flow 3.7s linear infinite,neon-pulse 2.8s ease-in-out infinite alternate;animation-delay:var(--delay,0s)}
-.metric-glow{filter:url(#metric-glow-blur);animation:metric-glow-pulse 4.2s ease-in-out infinite;animation-delay:var(--delay,0s)}
-.metric-glow-frame{fill:none;stroke:var(--accent);stroke-width:3.5}.metric-glow-value{fill:var(--accent)}
 .profile-glow{--glow-low:.16;--glow-peak:.82;animation:profile-glow-pulse 4.2s ease-in-out infinite;animation-delay:var(--delay,0s)}
 .profile-glow text{fill:var(--accent);stroke:var(--accent);stroke-width:.45}
 .profile-glow-text{--glow-low:.1;--glow-peak:.62}.profile-glow-strong{--glow-low:.28;--glow-peak:1}
 .profile-glow-line,.profile-glow-graph{fill:none;stroke:var(--accent);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}.profile-glow-bar{fill:var(--accent)}
 .activity-trail{fill:none;stroke:var(--secondary);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.035 .965;animation:activity-trail 5.6s linear infinite;opacity:.88}
 .bar-glint{fill:none;stroke:var(--secondary);stroke-width:1;stroke-linecap:round;stroke-dasharray:.08 .92;animation:bar-glint 3.6s linear infinite;animation-delay:var(--delay,0s);opacity:.7}
-.stack-glint{fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-dasharray:.24 .76;animation:stack-glint 2.7s linear infinite;animation-delay:var(--delay,0s)}
 @keyframes rail-flow{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
-@keyframes neon-pulse{from{opacity:.38}to{opacity:1}}
-@keyframes metric-glow-pulse{0%,100%{opacity:.22}50%{opacity:.85}}
 @keyframes profile-glow-pulse{0%,100%{opacity:var(--glow-low)}50%{opacity:var(--glow-peak)}}
 @keyframes chromatic-shift{0%{transform:translate(-1.4px,0)}50%{transform:translate(.7px,.5px)}100%{transform:translate(1.4px,0)}}
 @keyframes title-scan{from{stroke-dashoffset:101}to{stroke-dashoffset:0}}
 @keyframes activity-trail{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 @keyframes bar-glint{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
-@keyframes stack-glint{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 @media(prefers-reduced-motion: reduce){*,*::before,*::after{animation: none !important;opacity: 1 !important;transform:none !important;clip-path: none !important;stroke-dashoffset: 0 !important}.decorative{display:none !important}}
 </style>
 <g data-section="intro">
@@ -59,36 +52,10 @@ svg{font-size:14px}text{font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic
 <path d="M32 232 H768" pathLength="1" class="section-rail secondary"/>
 </g>
 </g>
-<g data-section="stats"><defs><filter id="section-label-01-glow-blur" filterUnits="userSpaceOnUse" x="20" y="229" width="760" height="40" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative profile-glow-text" filter="url(#section-label-01-glow-blur)" style="--delay:-0.7s" aria-hidden="true"><text x="32" y="253" class="mono accent eyebrow" >01</text><text x="67" y="253" class="mono eyebrow muted" >GITHUB SNAPSHOT</text><text x="768" y="253" class="mono eyebrow muted" text-anchor="end">crudfifth + CRUD5thOfficial</text></g><text x="32" y="253" class="mono accent eyebrow" >01</text><text x="67" y="253" class="mono eyebrow muted" >GITHUB SNAPSHOT</text><text x="768" y="253" class="mono eyebrow muted" text-anchor="end">crudfifth + CRUD5thOfficial</text>
-<defs><filter id="metric-glow-blur" x="-25%" y="-50%" width="150%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g><g class="metric-glow decorative" style="--delay:-0.0s" aria-hidden="true"><path d="M34 281 V265 H52 M178 265 H195 V281 M195 327 V343 H177 M52 343 H34 V327" class="metric-glow-frame"/><text x="46" y="310" class="mono metric metric-glow-value" >292</text></g>
-<text x="46" y="310" class="mono metric" >292</text><defs><filter id="metric-label-0-glow-blur" filterUnits="userSpaceOnUse" x="34" y="309" width="180" height="40" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative profile-glow-text" filter="url(#metric-label-0-glow-blur)" style="--delay:-0s" aria-hidden="true"><text x="46" y="333" class="metric-label muted" >公開repo</text></g><text x="46" y="333" class="metric-label muted" >公開repo</text>
-<path d="M34 281 V265 H52 M178 265 H195 V281 M195 327 V343 H177 M52 343 H34 V327" class="rule decorative" aria-hidden="true"/>
-<path d="M34 281 V265 H52 M178 265 H195 V281 M195 327 V343 H177 M52 343 H34 V327" class="metric-circuit decorative" pathLength="1" style="--delay:-0.0s" aria-hidden="true"/></g><g><g class="metric-glow decorative" style="--delay:-0.8s" aria-hidden="true"><path d="M220 281 V265 H238 M364 265 H381 V281 M381 327 V343 H363 M238 343 H220 V327" class="metric-glow-frame"/><text x="232" y="310" class="mono metric metric-glow-value" >291</text></g>
-<text x="232" y="310" class="mono metric" >291</text><defs><filter id="metric-label-1-glow-blur" filterUnits="userSpaceOnUse" x="220" y="309" width="180" height="40" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative profile-glow-text" filter="url(#metric-label-1-glow-blur)" style="--delay:-0.8s" aria-hidden="true"><text x="232" y="333" class="metric-label muted" >公開・非fork repo</text></g><text x="232" y="333" class="metric-label muted" >公開・非fork repo</text>
-<path d="M220 281 V265 H238 M364 265 H381 V281 M381 327 V343 H363 M238 343 H220 V327" class="rule decorative" aria-hidden="true"/>
-<path d="M220 281 V265 H238 M364 265 H381 V281 M381 327 V343 H363 M238 343 H220 V327" class="metric-circuit decorative" pathLength="1" style="--delay:-0.7s" aria-hidden="true"/></g><g><g class="metric-glow decorative" style="--delay:-1.6s" aria-hidden="true"><path d="M406 281 V265 H424 M550 265 H567 V281 M567 327 V343 H549 M424 343 H406 V327" class="metric-glow-frame"/><text x="418" y="310" class="mono metric metric-glow-value" >286</text></g>
-<text x="418" y="310" class="mono metric" >286</text><defs><filter id="metric-label-2-glow-blur" filterUnits="userSpaceOnUse" x="406" y="309" width="180" height="40" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative profile-glow-text" filter="url(#metric-label-2-glow-blur)" style="--delay:-1.6s" aria-hidden="true"><text x="418" y="333" class="metric-label muted" >公開repoのstars</text></g><text x="418" y="333" class="metric-label muted" >公開repoのstars</text>
-<path d="M406 281 V265 H424 M550 265 H567 V281 M567 327 V343 H549 M424 343 H406 V327" class="rule decorative" aria-hidden="true"/>
-<path d="M406 281 V265 H424 M550 265 H567 V281 M567 327 V343 H549 M424 343 H406 V327" class="metric-circuit decorative" pathLength="1" style="--delay:-1.4s" aria-hidden="true"/></g><g><g class="metric-glow decorative" style="--delay:-2.4s" aria-hidden="true"><path d="M592 281 V265 H610 M736 265 H753 V281 M753 327 V343 H735 M610 343 H592 V327" class="metric-glow-frame"/><text x="604" y="310" class="mono metric metric-glow-value" >4</text></g>
-<text x="604" y="310" class="mono metric" >4</text><defs><filter id="metric-label-3-glow-blur" filterUnits="userSpaceOnUse" x="592" y="309" width="180" height="40" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative profile-glow-text" filter="url(#metric-label-3-glow-blur)" style="--delay:-2.4000000000000004s" aria-hidden="true"><text x="604" y="333" class="metric-label muted" >個人フォロワー</text></g><text x="604" y="333" class="metric-label muted" >個人フォロワー</text>
-<path d="M592 281 V265 H610 M736 265 H753 V281 M753 327 V343 H735 M610 343 H592 V327" class="rule decorative" aria-hidden="true"/>
-<path d="M592 281 V265 H610 M736 265 H753 V281 M753 327 V343 H735 M610 343 H592 V327" class="metric-circuit decorative" pathLength="1" style="--delay:-2.1s" aria-hidden="true"/></g>
-<defs><filter id="section-rail-350-glow-blur" filterUnits="userSpaceOnUse" x="20" y="338" width="760" height="24" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative " filter="url(#section-rail-350-glow-blur)" style="--delay:-1.7s" aria-hidden="true"><path d="M32 350 H768" class="profile-glow-line"/></g>
+<g data-section="stats"><text x="32" y="253" class="mono accent eyebrow" >01</text><text x="67" y="253" class="mono eyebrow muted" >GITHUB SNAPSHOT</text><text x="768" y="253" class="mono eyebrow muted" text-anchor="end">crudfifth + CRUD5thOfficial</text>
+<g><text x="46" y="310" class="mono metric" >292</text><text x="46" y="333" class="metric-label muted" >公開repo</text></g><g><text x="232" y="310" class="mono metric" >291</text><text x="232" y="333" class="metric-label muted" >公開・非fork repo</text></g><g><text x="418" y="310" class="mono metric" >286</text><text x="418" y="333" class="metric-label muted" >公開repoのstars</text></g><g><text x="604" y="310" class="mono metric" >4</text><text x="604" y="333" class="metric-label muted" >個人フォロワー</text></g>
 <path d="M32 350 H768" class="rule"/>
-<g class="decorative" aria-hidden="true" style="--delay:-1.7s">
-<path d="M32 345 V350 H46 M754 350 H768 V355" class="circuit-notch"/>
-<path d="M32 350 H768" pathLength="1" class="section-rail"/>
-<path d="M32 350 H768" pathLength="1" class="section-rail secondary"/>
-</g>
-</g><g data-section="activity"><defs><filter id="section-label-02-glow-blur" filterUnits="userSpaceOnUse" x="20" y="348" width="760" height="40" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative profile-glow-text" filter="url(#section-label-02-glow-blur)" style="--delay:-1.4s" aria-hidden="true"><text x="32" y="372" class="mono accent eyebrow" >02</text><text x="67" y="372" class="mono eyebrow muted" >GITHUB ACTIVITY</text><text x="768" y="372" class="mono eyebrow muted" text-anchor="end">9,944 contributions</text></g><text x="32" y="372" class="mono accent eyebrow" >02</text><text x="67" y="372" class="mono eyebrow muted" >GITHUB ACTIVITY</text><text x="768" y="372" class="mono eyebrow muted" text-anchor="end">9,944 contributions</text>
+</g><g data-section="activity"><text x="32" y="372" class="mono accent eyebrow" >02</text><text x="67" y="372" class="mono eyebrow muted" >GITHUB ACTIVITY</text><text x="768" y="372" class="mono eyebrow muted" text-anchor="end">9,944 contributions</text>
 <defs><filter id="activity-baseline-glow-blur" filterUnits="userSpaceOnUse" x="23" y="446" width="754" height="24" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
 <g class="profile-glow decorative " filter="url(#activity-baseline-glow-blur)" style="--delay:-2.4s" aria-hidden="true"><path d="M35 458 H765" class="profile-glow-line"/></g>
 <path d="M35 458 H765" class="rule"/>
@@ -107,8 +74,7 @@ svg{font-size:14px}text{font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic
 <path d="M32 519 H768" pathLength="1" class="section-rail"/>
 <path d="M32 519 H768" pathLength="1" class="section-rail secondary"/>
 </g>
-</g><g data-section="languages"><defs><filter id="section-label-03-glow-blur" filterUnits="userSpaceOnUse" x="20" y="520" width="760" height="40" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative profile-glow-text" filter="url(#section-label-03-glow-blur)" style="--delay:-2.0999999999999996s" aria-hidden="true"><text x="32" y="544" class="mono accent eyebrow" >03</text><text x="67" y="544" class="mono eyebrow muted" >LANGUAGES</text></g><text x="32" y="544" class="mono accent eyebrow" >03</text><text x="67" y="544" class="mono eyebrow muted" >LANGUAGES</text>
+</g><g data-section="languages"><text x="32" y="544" class="mono accent eyebrow" >03</text><text x="67" y="544" class="mono eyebrow muted" >LANGUAGES</text>
 <defs><filter id="language-scope-glow-blur" filterUnits="userSpaceOnUse" x="23" y="546" width="754" height="40" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
 <g class="profile-glow decorative profile-glow-text" filter="url(#language-scope-glow-blur)" style="--delay:-3.2s" aria-hidden="true"><text x="35" y="570" class="muted" font-size="12">言語別コード量 · 個人＋組織・公開＋非公開・非fork</text><text x="765" y="570" class="mono muted" font-size="12" text-anchor="end">61,837,541 bytes</text></g><text x="35" y="570" class="muted" font-size="12">言語別コード量 · 個人＋組織・公開＋非公開・非fork</text><text x="765" y="570" class="mono muted" font-size="12" text-anchor="end">61,837,541 bytes</text>
 <defs><filter id="language-row-0-glow-blur" filterUnits="userSpaceOnUse" x="23" y="585" width="369" height="48" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
@@ -232,27 +198,8 @@ svg{font-size:14px}text{font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic
 <path d="M32 1091 H768" pathLength="1" class="section-rail"/>
 <path d="M32 1091 H768" pathLength="1" class="section-rail secondary"/>
 </g>
-</g><g data-section="stack"><defs><filter id="section-label-04-glow-blur" filterUnits="userSpaceOnUse" x="20" y="1092" width="760" height="40" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative profile-glow-text" filter="url(#section-label-04-glow-blur)" style="--delay:-2.8s" aria-hidden="true"><text x="32" y="1116" class="mono accent eyebrow" >04</text><text x="67" y="1116" class="mono eyebrow muted" >TECH STACK</text></g><text x="32" y="1116" class="mono accent eyebrow" >04</text><text x="67" y="1116" class="mono eyebrow muted" >TECH STACK</text>
-<g><defs><filter id="stack-elixir-glow-blur" filterUnits="userSpaceOnUse" x="23" y="1126" width="113.52000000000001" height="49" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative " filter="url(#stack-elixir-glow-blur)" style="--delay:-0s" aria-hidden="true"><text x="35" y="1154" class="mono" font-size="16">Elixir</text><text x="108.52000000000001" y="1154" class="mono accent" >/</text><path d="M35 1163 h59.52" class="profile-glow-line"/></g><text x="35" y="1154" class="mono" font-size="16">Elixir</text><text x="108.52000000000001" y="1154" class="mono accent" >/</text>
-<path d="M35 1163 h59.52" class="rule decorative" aria-hidden="true"/>
-<path d="M35 1163 h59.52" class="stack-glint decorative" pathLength="1" style="--delay:-0.00s" aria-hidden="true"/></g><g><defs><filter id="stack-ada-glow-blur" filterUnits="userSpaceOnUse" x="124.52000000000001" y="1126" width="83.75999999999999" height="49" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative " filter="url(#stack-ada-glow-blur)" style="--delay:-0.43s" aria-hidden="true"><text x="136.52" y="1154" class="mono" font-size="16">Ada</text><text x="180.28" y="1154" class="mono accent" >/</text><path d="M136.52 1163 h29.76" class="profile-glow-line"/></g><text x="136.52" y="1154" class="mono" font-size="16">Ada</text><text x="180.28" y="1154" class="mono accent" >/</text>
-<path d="M136.52 1163 h29.76" class="rule decorative" aria-hidden="true"/>
-<path d="M136.52 1163 h29.76" class="stack-glint decorative" pathLength="1" style="--delay:-0.43s" aria-hidden="true"/></g><g><defs><filter id="stack-zig-glow-blur" filterUnits="userSpaceOnUse" x="196.28" y="1126" width="83.75999999999999" height="49" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative " filter="url(#stack-zig-glow-blur)" style="--delay:-0.86s" aria-hidden="true"><text x="208.28" y="1154" class="mono" font-size="16">Zig</text><text x="252.04" y="1154" class="mono accent" >/</text><path d="M208.28 1163 h29.76" class="profile-glow-line"/></g><text x="208.28" y="1154" class="mono" font-size="16">Zig</text><text x="252.04" y="1154" class="mono accent" >/</text>
-<path d="M208.28 1163 h29.76" class="rule decorative" aria-hidden="true"/>
-<path d="M208.28 1163 h29.76" class="stack-glint decorative" pathLength="1" style="--delay:-0.86s" aria-hidden="true"/></g><g><defs><filter id="stack-rust-glow-blur" filterUnits="userSpaceOnUse" x="268.03999999999996" y="1126" width="93.68" height="49" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative " filter="url(#stack-rust-glow-blur)" style="--delay:-1.29s" aria-hidden="true"><text x="280.03999999999996" y="1154" class="mono" font-size="16">Rust</text><text x="333.71999999999997" y="1154" class="mono accent" >/</text><path d="M280.03999999999996 1163 h39.68" class="profile-glow-line"/></g><text x="280.03999999999996" y="1154" class="mono" font-size="16">Rust</text><text x="333.71999999999997" y="1154" class="mono accent" >/</text>
-<path d="M280.03999999999996 1163 h39.68" class="rule decorative" aria-hidden="true"/>
-<path d="M280.03999999999996 1163 h39.68" class="stack-glint decorative" pathLength="1" style="--delay:-1.29s" aria-hidden="true"/></g><g><defs><filter id="stack-typescript-glow-blur" filterUnits="userSpaceOnUse" x="349.71999999999997" y="1126" width="153.2" height="49" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative " filter="url(#stack-typescript-glow-blur)" style="--delay:-1.72s" aria-hidden="true"><text x="361.71999999999997" y="1154" class="mono" font-size="16">TypeScript</text><text x="474.91999999999996" y="1154" class="mono accent" >/</text><path d="M361.71999999999997 1163 h99.20" class="profile-glow-line"/></g><text x="361.71999999999997" y="1154" class="mono" font-size="16">TypeScript</text><text x="474.91999999999996" y="1154" class="mono accent" >/</text>
-<path d="M361.71999999999997 1163 h99.20" class="rule decorative" aria-hidden="true"/>
-<path d="M361.71999999999997 1163 h99.20" class="stack-glint decorative" pathLength="1" style="--delay:-1.72s" aria-hidden="true"/></g><g><defs><filter id="stack-python-glow-blur" filterUnits="userSpaceOnUse" x="490.91999999999996" y="1126" width="113.52000000000001" height="49" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="profile-glow decorative " filter="url(#stack-python-glow-blur)" style="--delay:-2.15s" aria-hidden="true"><text x="502.91999999999996" y="1154" class="mono" font-size="16">Python</text><path d="M502.91999999999996 1163 h59.52" class="profile-glow-line"/></g><text x="502.91999999999996" y="1154" class="mono" font-size="16">Python</text>
-<path d="M502.91999999999996 1163 h59.52" class="rule decorative" aria-hidden="true"/>
-<path d="M502.91999999999996 1163 h59.52" class="stack-glint decorative" pathLength="1" style="--delay:-2.15s" aria-hidden="true"/></g>
+</g><g data-section="stack"><text x="32" y="1116" class="mono accent eyebrow" >04</text><text x="67" y="1116" class="mono eyebrow muted" >TECH STACK</text>
+<text x="35" y="1154" class="mono" font-size="16">Elixir</text><text x="108.52000000000001" y="1154" class="mono accent" >/</text><text x="136.52" y="1154" class="mono" font-size="16">Ada</text><text x="180.28" y="1154" class="mono accent" >/</text><text x="208.28" y="1154" class="mono" font-size="16">Zig</text><text x="252.04" y="1154" class="mono accent" >/</text><text x="280.03999999999996" y="1154" class="mono" font-size="16">Rust</text><text x="333.71999999999997" y="1154" class="mono accent" >/</text><text x="361.71999999999997" y="1154" class="mono" font-size="16">TypeScript</text><text x="474.91999999999996" y="1154" class="mono accent" >/</text><text x="502.91999999999996" y="1154" class="mono" font-size="16">Python</text>
 </g>
 <defs><filter id="profile-footer-glow-blur" filterUnits="userSpaceOnUse" x="530" y="1178" width="247" height="36" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
 <g class="profile-glow decorative profile-glow-text" filter="url(#profile-footer-glow-blur)" style="--delay:-3.6s" aria-hidden="true"><text x="765" y="1202" class="mono eyebrow muted" text-anchor="end">UPDATED 2026-11-02 UTC</text></g><text x="765" y="1202" class="mono eyebrow muted" text-anchor="end">UPDATED 2026-11-02 UTC</text>
