@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, rename, rm, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -24,7 +24,7 @@ function isTimestamp(value) {
   return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value) && Number.isFinite(Date.parse(value));
 }
 
-async function fetchJson(path, fetchImpl, timeoutMs) {
+async function fetchJson(path, fetchImpl, timeoutMs, token = '', requestLabel = path) {
   let response;
   try {
     response = await fetchImpl(`${apiOrigin}${path}`, {
@@ -32,20 +32,21 @@ async function fetchJson(path, fetchImpl, timeoutMs) {
       headers: {
         Accept: 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
-        'User-Agent': 'crudfifth-public-profile-collector',
+        'User-Agent': 'crudfifth-profile-collector',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
       },
       redirect: 'error',
       signal: AbortSignal.timeout(timeoutMs),
     });
   } catch (error) {
     const reason = error?.name === 'TimeoutError' || error?.name === 'AbortError' ? 'timeout' : 'network failure';
-    throw new Error(`GitHub GET ${path}: ${reason}`);
+    throw new Error(`GitHub GET ${requestLabel}: ${reason}`);
   }
-  if (!response.ok) throw new Error(`GitHub GET ${path}: HTTP ${response.status}`);
+  if (!response.ok) throw new Error(`GitHub GET ${requestLabel}: HTTP ${response.status}`);
   try {
     return { body: await response.json(), link: response.headers.get('link') ?? '' };
   } catch {
-    throw new Error(`GitHub GET ${path}: invalid JSON response`);
+    throw new Error(`GitHub GET ${requestLabel}: invalid JSON response`);
   }
 }
 
@@ -73,14 +74,8 @@ function validateRepository(repository, source) {
   requireCondition(isTimestamp(repository.updated_at), 'repository update timestamp');
 }
 
-function buildProfile(profile, repositories, events, generatedAt) {
+function buildProfile(profile, repositories, events, languages, visibility, generatedAt) {
   const originals = repositories.filter((repository) => !repository.fork);
-  const languageCounts = new Map();
-  for (const repository of originals) {
-    if (repository.language !== null) {
-      languageCounts.set(repository.language, (languageCounts.get(repository.language) ?? 0) + 1);
-    }
-  }
 
   const dayCounts = new Map();
   for (const event of events) {
@@ -99,7 +94,7 @@ function buildProfile(profile, repositories, events, generatedAt) {
   }
 
   return {
-    schemaVersion: 2,
+    schemaVersion: 3,
     owner,
     sources: sources.map((source) => ({ ...source })),
     generatedAt,
@@ -117,8 +112,8 @@ function buildProfile(profile, repositories, events, generatedAt) {
       stars: originals.reduce((sum, repository) => sum + repository.stargazers_count, 0),
       forks: originals.reduce((sum, repository) => sum + repository.forks_count, 0),
     },
-    languages: [...languageCounts].map(([name, count]) => ({ name, count }))
-      .sort((left, right) => right.count - left.count || left.name.localeCompare(right.name, 'en')),
+    languages,
+    languageScope: { kind: 'github-language-bytes', visibility, totalBytes: languages.reduce((sum, language) => sum + language.bytes, 0) },
     activity: {
       kind: 'public-events',
       label: events.length ? '個人＋組織の公開イベント・取得分' : '取得できた公開イベントなし',
@@ -150,14 +145,14 @@ async function writeProfileAtomically(outputPath, profile) {
   }
 }
 
-async function collectRepositories(source, publicRepoCount, fetchImpl, timeoutMs) {
+async function collectRepositories(source, publicRepoCount, fetchImpl, timeoutMs, token) {
   const repositories = [];
   const repositoryIds = new Set();
   const maximumPages = Math.ceil(publicRepoCount / 100) + 1;
   const basePath = source.type === 'User' ? `/users/${source.login}/repos?type=owner` : `/orgs/${source.login}/repos?type=public`;
   let reachedLastPage = false;
   for (let page = 1; page <= maximumPages; page += 1) {
-    const { body: pageRepositories, link } = await fetchJson(`${basePath}&sort=full_name&direction=asc&per_page=100&page=${page}`, fetchImpl, timeoutMs);
+    const { body: pageRepositories, link } = await fetchJson(`${basePath}&sort=full_name&direction=asc&per_page=100&page=${page}`, fetchImpl, timeoutMs, token);
     requireCondition(Array.isArray(pageRepositories) && pageRepositories.length <= 100, 'repository page');
     for (const repository of pageRepositories) {
       validateRepository(repository, source);
@@ -176,19 +171,81 @@ async function collectRepositories(source, publicRepoCount, fetchImpl, timeoutMs
   return repositories;
 }
 
-export async function collectProfile({ fetchImpl = fetch, outputPath = defaultOutputPath, timeoutMs = 15_000, now = () => new Date() } = {}) {
-  const { body: profile } = await fetchJson(`/users/${owner}`, fetchImpl, timeoutMs);
+async function collectOwnedRepositories(source, fetchImpl, timeoutMs, token) {
+  const repositories = [];
+  const repositoryIds = new Set();
+  const basePath = source.type === 'User' ? '/user/repos?type=owner' : `/orgs/${source.login}/repos?type=all`;
+  for (let page = 1; ; page += 1) {
+    const { body: pageRepositories, link } = await fetchJson(`${basePath}&sort=full_name&direction=asc&per_page=100&page=${page}`, fetchImpl, timeoutMs, token, 'owned repository page');
+    requireCondition(Array.isArray(pageRepositories) && pageRepositories.length <= 100, 'owned repository page');
+    for (const repository of pageRepositories) {
+      // /user/repos can include accessible repositories; ownership stays an explicit boundary.
+      if (repository?.owner?.login?.toLowerCase() !== source.login.toLowerCase()) continue;
+      requireCondition(isCount(repository.id), 'owned repository ID');
+      requireCondition(typeof repository.private === 'boolean' && typeof repository.fork === 'boolean', 'owned repository visibility or fork flag');
+      requireCondition(typeof repository.name === 'string' && repository.name.length > 0, 'owned repository name');
+      requireCondition(!repositoryIds.has(repository.id), 'duplicate owned repository across pages');
+      repositoryIds.add(repository.id);
+      repositories.push({ id: repository.id, owner: source.login, name: repository.name, fork: repository.fork });
+    }
+    const hasNextPage = /rel="next"/.test(link);
+    if (pageRepositories.length < 100 && !hasNextPage) break;
+    requireCondition(pageRepositories.length === 100, 'incomplete owned repository page');
+  }
+  return repositories;
+}
+
+async function collectLanguageBytes(repositories, fetchImpl, timeoutMs, token) {
+  const languageBytes = new Map();
+  let totalBytes = 0;
+  for (const repository of repositories) {
+    if (repository.fork) continue;
+    const repositoryOwner = typeof repository.owner === 'string' ? repository.owner : repository.owner.login;
+    const { body: languages } = await fetchJson(`/repos/${encodeURIComponent(repositoryOwner)}/${encodeURIComponent(repository.name)}/languages`, fetchImpl, timeoutMs, token, 'repository languages');
+    requireCondition(languages !== null && typeof languages === 'object' && !Array.isArray(languages), 'repository language bytes');
+    for (const [name, bytes] of Object.entries(languages)) {
+      requireCondition(name.length > 0 && name.length <= 100 && name.isWellFormed() && !/[\u0000-\u001F\uFFFE\uFFFF]/u.test(name) && isCount(bytes), 'repository language bytes');
+      if (!bytes) continue;
+      totalBytes += bytes;
+      requireCondition(Number.isSafeInteger(totalBytes), 'language byte total exceeds safe integer range');
+      languageBytes.set(name, (languageBytes.get(name) ?? 0) + bytes);
+    }
+  }
+  return [...languageBytes].map(([name, bytes]) => ({ name, bytes }))
+    .sort((left, right) => right.bytes - left.bytes || left.name.localeCompare(right.name, 'en'));
+}
+
+async function preventScopeDowngrade(outputPath, token) {
+  if (token) return;
+  let previous;
+  try { previous = await readFile(outputPath, 'utf8'); }
+  catch (error) { if (error.code === 'ENOENT' || error.code === 'EISDIR') return; throw error; }
+  let profile;
+  try { profile = JSON.parse(previous); } catch { return; }
+  if (profile?.languageScope?.visibility === 'public-and-private') {
+    throw new Error('GITHUB_TOKEN credentials are required to refresh the existing public-and-private language snapshot');
+  }
+}
+
+export async function collectProfile({ fetchImpl = fetch, outputPath = defaultOutputPath, timeoutMs = 15_000, now = () => new Date(), token = process.env.GITHUB_TOKEN ?? '' } = {}) {
+  requireCondition(typeof token === 'string' && !/[\r\n]/.test(token), 'authentication token');
+  await preventScopeDowngrade(outputPath, token);
+  if (token) {
+    const { body: identity } = await fetchJson('/user', fetchImpl, timeoutMs, token, 'authenticated user');
+    requireCondition(identity?.login?.toLowerCase() === owner, 'authenticated account must match profile owner');
+  }
+  const { body: profile } = await fetchJson(`/users/${owner}`, fetchImpl, timeoutMs, token);
   validateProfile(profile);
   const repositoriesById = new Map();
   const eventsById = new Map();
   for (const source of sources) {
-    const metadata = source.type === 'User' ? profile : (await fetchJson(`/orgs/${source.login}`, fetchImpl, timeoutMs)).body;
+    const metadata = source.type === 'User' ? profile : (await fetchJson(`/orgs/${source.login}`, fetchImpl, timeoutMs, token)).body;
     validateSource(metadata, source);
-    for (const repository of await collectRepositories(source, metadata.public_repos, fetchImpl, timeoutMs)) {
+    for (const repository of await collectRepositories(source, metadata.public_repos, fetchImpl, timeoutMs, token)) {
       repositoriesById.set(repository.id, repository);
     }
     const eventsPath = source.type === 'User' ? `/users/${source.login}/events/public` : `/orgs/${source.login}/events`;
-    const { body: events } = await fetchJson(`${eventsPath}?per_page=100&page=1`, fetchImpl, timeoutMs);
+    const { body: events } = await fetchJson(`${eventsPath}?per_page=100&page=1`, fetchImpl, timeoutMs, token);
     requireCondition(Array.isArray(events) && events.length <= 100, 'public events page');
     for (const event of events) {
       requireCondition(typeof event?.id === 'string' && event.id.length > 0, 'public event ID');
@@ -196,7 +253,18 @@ export async function collectProfile({ fetchImpl = fetch, outputPath = defaultOu
       eventsById.set(event.id, event);
     }
   }
-  const collectedProfile = buildProfile(profile, [...repositoriesById.values()], [...eventsById.values()], now().toISOString());
+  const languageRepositoriesById = new Map(repositoriesById);
+  if (token) {
+    languageRepositoriesById.clear();
+    for (const source of sources) {
+      for (const repository of await collectOwnedRepositories(source, fetchImpl, timeoutMs, token)) {
+        requireCondition(!languageRepositoriesById.has(repository.id), 'duplicate owned repository across sources');
+        languageRepositoriesById.set(repository.id, repository);
+      }
+    }
+  }
+  const languages = await collectLanguageBytes([...languageRepositoriesById.values()], fetchImpl, timeoutMs, token);
+  const collectedProfile = buildProfile(profile, [...repositoriesById.values()], [...eventsById.values()], languages, token ? 'public-and-private' : 'public', now().toISOString());
   await writeProfileAtomically(outputPath, collectedProfile);
   return collectedProfile;
 }
@@ -204,7 +272,7 @@ export async function collectProfile({ fetchImpl = fetch, outputPath = defaultOu
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const profile = await collectProfile();
-    console.log(JSON.stringify({ saved: true, generatedAt: profile.generatedAt, publicRepositories: profile.repositories.publicCount, originalRepositories: profile.repositories.originalCount, publicEvents: profile.activity.eventCount }));
+    console.log(JSON.stringify({ saved: true, generatedAt: profile.generatedAt, publicRepositories: profile.repositories.publicCount, originalRepositories: profile.repositories.originalCount, publicEvents: profile.activity.eventCount, languageVisibility: profile.languageScope.visibility, languageBytes: profile.languageScope.totalBytes }));
   } catch (error) {
     console.error(`Collection failed; the existing profile was not replaced. ${error.message}`);
     process.exitCode = 1;

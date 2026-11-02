@@ -23,7 +23,7 @@ function requireDate(value, label) {
 }
 
 export function validateProfile(profile) {
-  if (!profile || profile.schemaVersion !== 2) throw new TypeError('Unsupported profile schema');
+  if (!profile || profile.schemaVersion !== 3) throw new TypeError('Unsupported profile schema');
   requireText(profile.owner, 'owner');
   if (profile.owner !== 'crudfifth' || !Array.isArray(profile.sources) || profile.sources.length !== 2
     || profile.sources[0]?.login !== 'crudfifth' || profile.sources[0]?.type !== 'User'
@@ -36,17 +36,19 @@ export function validateProfile(profile) {
   for (const name of ['publicCount', 'originalCount', 'stars', 'forks']) requireCount(profile.repositories?.[name], `repositories.${name}`);
   if (profile.repositories.originalCount > profile.repositories.publicCount) throw new TypeError('Original count exceeds public count');
   if (profile.profile.publicRepos > profile.repositories.publicCount) throw new TypeError('Personal repository count exceeds combined public count');
-  if (!Array.isArray(profile.languages) || profile.languages.length > 100) throw new TypeError('Invalid languages');
+  if (!Array.isArray(profile.languages)) throw new TypeError('Invalid languages');
   const languageNames = new Set();
-  let classifiedCount = 0;
+  let totalBytes = 0;
   for (const language of profile.languages) {
     requireText(language.name, 'language.name');
-    requireCount(language.count, 'language.count');
-    if (!language.name || !language.count || languageNames.has(language.name)) throw new TypeError('Invalid or repeated language');
+    requireCount(language.bytes, 'language.bytes');
+    if (!language.name || !language.bytes || languageNames.has(language.name)) throw new TypeError('Invalid or repeated language');
     languageNames.add(language.name);
-    classifiedCount += language.count;
+    totalBytes += language.bytes;
   }
-  if (classifiedCount > profile.repositories.originalCount) throw new TypeError('Language counts exceed original repositories');
+  if (!Number.isSafeInteger(totalBytes) || profile.languageScope?.kind !== 'github-language-bytes'
+    || !['public', 'public-and-private'].includes(profile.languageScope.visibility)
+    || totalBytes !== profile.languageScope.totalBytes) throw new TypeError('Invalid language byte scope or total');
   const activity = profile.activity;
   if (!activity || activity.kind !== 'public-events' || activity.complete !== false) throw new TypeError('Invalid activity scope');
   requireText(activity.label, 'activity.label');
@@ -167,8 +169,8 @@ ${textNode(34, 214, projectNames ? `RECENT REPOS  ${truncateText(projectNames, 5
 
 function renderStats(profile) {
   const metrics = [
-    ['公開repo', profile.repositories.publicCount], ['オリジナルrepo', profile.repositories.originalCount],
-    ['所有repoのstars', profile.repositories.stars], ['個人フォロワー', profile.profile.followers],
+    ['公開repo', profile.repositories.publicCount], ['公開・非fork repo', profile.repositories.originalCount],
+    ['公開repoのstars', profile.repositories.stars], ['個人フォロワー', profile.profile.followers],
   ];
   return `<g data-section="stats">${sectionLabel('01', 'GITHUB SNAPSHOT', 253, 'crudfifth + CRUD5thOfficial')}
 ${metrics.map(([label, count], index) => `<g class="stat-reveal" style="--delay:${index * 0.12}s">${textNode(34 + index * 186, 309, numberFormat.format(count), 'mono metric')}${textNode(36 + index * 186, 332, label, 'metric-label muted')}</g>`).join('')}
@@ -200,23 +202,23 @@ ${textNode(765, 481, '個人＋組織の公開イベント・取得分', 'muted'
 }
 
 function renderLanguages(profile, y) {
-  const classifiedCount = profile.languages.reduce((count, language) => count + language.count, 0);
-  const unclassifiedCount = profile.repositories.originalCount - classifiedCount;
+  const totalBytes = profile.languageScope.totalBytes;
   const rows = profile.languages.map((language, index) => {
     const column = index % 2;
     const row = Math.floor(index / 2);
     const x = 35 + column * 382;
     const baseline = y + 65 + row * 35;
-    const width = 180 * language.count / Math.max(1, classifiedCount);
-    return `${textNode(x, baseline, truncateText(language.name, 125, 12, true), 'mono', 'font-size="12"')}
-<rect class="track" x="${x + 130}" y="${baseline - 8}" width="180" height="4"/>
-<rect class="bar" x="${x + 130}" y="${baseline - 8}" width="${width.toFixed(2)}" height="4" style="--delay:${index * 0.06}s"/>
-${textNode(x + 345, baseline, language.count, 'mono muted', 'text-anchor="end" font-size="12"')}`;
+    const fraction = language.bytes / Math.max(1, totalBytes);
+    return `${textNode(x, baseline, language.name, 'mono', 'font-size="12"')}
+${textNode(x + 345, baseline, fraction * 100 < 0.1 ? '<0.1%' : `${(fraction * 100).toFixed(1)}%`, 'mono muted', 'text-anchor="end" font-size="12"')}
+<rect class="track" x="${x}" y="${baseline + 8}" width="345" height="4"/>
+<rect class="bar" x="${x}" y="${baseline + 8}" width="${(345 * fraction).toFixed(2)}" height="4" style="--delay:${index * 0.06}s"/>`;
   }).join('');
-  const empty = profile.languages.length ? '' : textNode(35, y + 65, '主言語を判定できたrepoなし', 'muted');
+  const empty = profile.languages.length ? '' : textNode(35, y + 65, '取得できた言語コード量なし', 'muted');
+  const visibility = profile.languageScope.visibility === 'public-and-private' ? '公開＋非公開' : '公開';
   return `<g data-section="languages">${sectionLabel('03', 'LANGUAGES', y)}
-${textNode(35, y + 26, '主言語別repo件数 · 個人＋組織の公開・非fork repo', 'muted', 'font-size="12"')}
-${textNode(765, y + 26, `判定済み ${classifiedCount} / ${profile.repositories.originalCount} · 未判定 ${unclassifiedCount}`, 'muted', 'font-size="12" text-anchor="end"')}
+${textNode(35, y + 26, `言語別コード量 · 個人＋組織・${visibility}・非fork`, 'muted', 'font-size="12"')}
+${textNode(765, y + 26, `${numberFormat.format(totalBytes)} bytes`, 'mono muted', 'font-size="12" text-anchor="end"')}
 ${rows}${empty}
 </g>`;
 }
@@ -239,7 +241,7 @@ export function renderProfileSvg(input, { theme = 'dark' } = {}) {
   const languageRows = Math.max(1, Math.ceil(profile.languages.length / 2));
   const stackY = languageY + 82 + languageRows * 35;
   const height = stackY + 102;
-  const description = `${profile.profile.bio}. ${profile.projects.map((project) => `${project.name}: ${project.description}`).join('; ')}. crudfifth + CRUD5thOfficialの公開データ。言語は公開・非fork repoの主言語別件数。活動は個人＋組織の公開イベント取得分。フォロワーは個人の値。`;
+  const description = `${profile.profile.bio}. ${profile.projects.map((project) => `${project.name}: ${project.description}`).join('; ')}. crudfifth + CRUD5thOfficial。repo統計と活動は公開データ。言語は個人＋組織の${profile.languageScope.visibility === 'public-and-private' ? '公開＋非公開' : '公開'}・非fork repoのdefault branchをGitHubが判定したコードbytes割合。活動は個人＋組織の公開イベント取得分。フォロワーは個人の値。`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="${height}" viewBox="0 0 800 ${height}" role="img" aria-labelledby="profile-title profile-description">
 <title id="profile-title">${xmlEscape(`CRUD5th — ${profile.profile.name}`)}</title>
 <desc id="profile-description">${xmlEscape(description)}</desc>

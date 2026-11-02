@@ -14,12 +14,13 @@ import { createPreviewServer } from './serve.mjs';
 const runFile = promisify(execFile);
 const profileRoot = path.dirname(fileURLToPath(import.meta.url));
 const profile = {
-  schemaVersion: 2, owner: 'crudfifth', generatedAt: '2026-11-02T00:00:00Z',
+  schemaVersion: 3, owner: 'crudfifth', generatedAt: '2026-11-02T00:00:00Z',
   sources: [{ login: 'crudfifth', type: 'User' }, { login: 'CRUD5thOfficial', type: 'Organization' }],
   profile: { name: 'Fixture Name', bio: 'Profile fixture', followers: 4, following: 5,
     publicRepos: 5, url: 'https://github.com/crudfifth' },
   repositories: { publicCount: 8, originalCount: 6, stars: 20, forks: 3 },
-  languages: [{ name: 'TypeScript', count: 3 }, { name: 'Rust', count: 1 }],
+  languages: [{ name: 'TypeScript', bytes: 300 }, { name: 'Rust', bytes: 100 }],
+  languageScope: { kind: 'github-language-bytes', visibility: 'public-and-private', totalBytes: 400 },
   activity: { kind: 'public-events', label: '個人＋組織の公開イベント・取得分', complete: false,
     since: '2026-10-29', until: '2026-10-30', eventCount: 3,
     days: [{ date: '2026-10-29', count: 1 }, { date: '2026-10-30', count: 2 }] },
@@ -54,13 +55,14 @@ test('combined counts identify both subjects and keep the personal follower scop
   const svg = renderProfileSvg(profile);
   assert.match(svg, /公開イベント・取得分/);
   assert.doesNotMatch(svg, /年間貢献数ではありません|SELF-HOSTED SVG/);
-  assert.match(svg, /主言語別repo件数/);
+  assert.match(svg, /言語別コード量/);
+  assert.match(svg, /75\.0%/);
+  assert.match(svg, /25\.0%/);
   assert.match(svg, /crudfifth \+ CRUD5thOfficial/);
   assert.match(svg, /個人フォロワー/);
   assert.match(svg, /個人＋組織の公開イベント・取得分/);
-  assert.match(svg, /個人＋組織の公開・非fork repo/);
-  assert.match(svg, /判定済み 4 \/ 6/);
-  assert.match(svg, /未判定 2/);
+  assert.match(svg, /個人＋組織・公開＋非公開・非fork/);
+  assert.match(svg, /400 bytes/);
   assert.match(svg, />8<|>8<\/tspan>/);
   assert.match(svg, />20<|>20<\/tspan>/);
   assert.match(svg, /3 events/);
@@ -91,9 +93,8 @@ test('actual collector output with zero events and empty dates renders explicit 
     assert.equal(empty.activity.until, '');
     const svg = renderProfileSvg(empty);
     assert.match(svg, /取得できた公開イベントなし/);
-    assert.match(svg, /主言語を判定できたrepoなし/);
-    assert.match(svg, /判定済み 0 \/ 0/);
-    assert.match(svg, /未判定 0/);
+    assert.match(svg, /取得できた言語コード量なし/);
+    assert.match(svg, /0 bytes/);
     assert.doesNotMatch(svg, /NaN|Infinity/);
   });
 });
@@ -104,7 +105,7 @@ test('invalid input is rejected before replacing existing assets', async () => {
     await writeFile(path.join(rootDir, 'assets/profile-dark.svg'), 'previous-dark');
     await writeFile(path.join(rootDir, 'assets/profile-light.svg'), 'previous-light');
     const inputPath = path.join(rootDir, 'invalid.json');
-    await writeFile(inputPath, JSON.stringify({ ...profile, languages: [{ name: 'bad', count: -1 }] }));
+    await writeFile(inputPath, JSON.stringify({ ...profile, languages: [{ name: 'bad', bytes: -1 }] }));
     await assert.rejects(generateProfileAssets({ inputPath, outputDir: rootDir }));
     assert.equal(await readFile(path.join(rootDir, 'assets/profile-dark.svg'), 'utf8'), 'previous-dark');
     assert.equal(await readFile(path.join(rootDir, 'assets/profile-light.svg'), 'utf8'), 'previous-light');
@@ -118,8 +119,10 @@ test('file creation failure preserves existing destination and does not claim su
   await withTempDir(async (rootDir) => {
     const blockedOutput = path.join(rootDir, 'not-a-directory');
     await writeFile(blockedOutput, 'keep-me');
+    const inputPath = path.join(rootDir, 'profile.json');
+    await writeFile(inputPath, JSON.stringify(profile));
     await assert.rejects(generateProfileAssets({
-      inputPath: path.join(profileRoot, 'data/profile.json'), outputDir: blockedOutput,
+      inputPath, outputDir: blockedOutput,
     }));
     assert.equal(await readFile(blockedOutput, 'utf8'), 'keep-me');
   });
@@ -129,7 +132,7 @@ test('inconsistent counts, unknown theme and invalid numeric values fail explici
   for (const mutation of [
     (input) => { input.repositories.stars = null; },
     (input) => { input.activity.eventCount += 1; },
-    (input) => { input.repositories.originalCount = 1; },
+    (input) => { input.languageScope.totalBytes = 1; },
     (input) => { input.profile.followers = -1; },
     (input) => { input.profile.bio = {}; },
     (input) => { input.schemaVersion = 1; },
@@ -147,7 +150,7 @@ test('inconsistent counts, unknown theme and invalid numeric values fail explici
   assert.throws(() => renderProfileSvg(profile, { theme: 'other' }));
 });
 
-test('CLI generates both themed images from schema2 input at the documented entry point', async () => {
+test('CLI generates both themed images from schema3 input at the documented entry point', async () => {
   await withTempDir(async (outputDir) => {
     const inputPath = path.join(outputDir, 'profile.json');
     await writeFile(inputPath, JSON.stringify(profile));
@@ -201,4 +204,19 @@ test('preview server refuses symlink assets outside the output root', async () =
       assert.equal(response.status, 404);
     } finally { server.close(); await once(server, 'close'); }
   });
+});
+
+
+test('every language is displayed in two columns with percentages and a content-sized canvas', () => {
+  const input = structuredClone(profile);
+  input.languages = Array.from({ length: 51 }, (_, index) => ({ name: `Language${index + 1}`, bytes: 1 }));
+  input.languageScope.totalBytes = 51;
+  const svg = renderProfileSvg(input);
+  for (const language of input.languages) assert.match(svg, new RegExp(`>${language.name}<`));
+  assert.equal((svg.match(/class="bar"/g) ?? []).length, 51);
+  assert.match(svg, /<text x="35"/);
+  assert.match(svg, /<text x="417"/);
+  const height = Number(svg.match(/height="(\d+)"/)[1]);
+  assert.ok(height > 1500);
+  assert.doesNotMatch(svg, /NaN|Infinity/);
 });

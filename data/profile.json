@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "owner": "crudfifth",
   "sources": [
     {
@@ -11,7 +11,7 @@
       "type": "Organization"
     }
   ],
-  "generatedAt": "2026-11-01T23:45:29.234Z",
+  "generatedAt": "2026-11-02T00:54:29.477Z",
   "profile": {
     "name": "CRUD5th-髙橋綱弥-",
     "bio": "Freelance Full-Stack / AI & LLM Engineer | TypeScript, Python, Rust | Design → Build → Release → Operate | CRUD5th",
@@ -29,37 +29,122 @@
   "languages": [
     {
       "name": "TypeScript",
-      "count": 4
+      "bytes": 30329487
     },
     {
-      "name": "HTML",
-      "count": 3
+      "name": "Go",
+      "bytes": 10731782
     },
     {
       "name": "JavaScript",
-      "count": 2
+      "bytes": 4696103
     },
     {
-      "name": "PHP",
-      "count": 2
+      "name": "Elixir",
+      "bytes": 3240762
     },
     {
-      "name": "Ada",
-      "count": 1
+      "name": "HTML",
+      "bytes": 3133279
     },
     {
-      "name": "Hack",
-      "count": 1
-    },
-    {
-      "name": "Rust",
-      "count": 1
+      "name": "Python",
+      "bytes": 3024998
     },
     {
       "name": "Vue",
-      "count": 1
+      "bytes": 1695894
+    },
+    {
+      "name": "CSS",
+      "bytes": 1093791
+    },
+    {
+      "name": "PowerShell",
+      "bytes": 1047612
+    },
+    {
+      "name": "Rust",
+      "bytes": 929176
+    },
+    {
+      "name": "Shell",
+      "bytes": 672852
+    },
+    {
+      "name": "PLpgSQL",
+      "bytes": 287648
+    },
+    {
+      "name": "Swift",
+      "bytes": 279247
+    },
+    {
+      "name": "Kotlin",
+      "bytes": 222541
+    },
+    {
+      "name": "PHP",
+      "bytes": 132638
+    },
+    {
+      "name": "HCL",
+      "bytes": 124125
+    },
+    {
+      "name": "Pug",
+      "bytes": 45094
+    },
+    {
+      "name": "Stylus",
+      "bytes": 37070
+    },
+    {
+      "name": "Blade",
+      "bytes": 27685
+    },
+    {
+      "name": "Dockerfile",
+      "bytes": 26023
+    },
+    {
+      "name": "Nix",
+      "bytes": 12289
+    },
+    {
+      "name": "Hack",
+      "bytes": 12016
+    },
+    {
+      "name": "Starlark",
+      "bytes": 11563
+    },
+    {
+      "name": "R",
+      "bytes": 5141
+    },
+    {
+      "name": "Less",
+      "bytes": 2010
+    },
+    {
+      "name": "Haml",
+      "bytes": 1428
+    },
+    {
+      "name": "Svelte",
+      "bytes": 763
+    },
+    {
+      "name": "Ada",
+      "bytes": 51
     }
   ],
+  "languageScope": {
+    "kind": "github-language-bytes",
+    "visibility": "public-and-private",
+    "totalBytes": 61823068
+  },
   "activity": {
     "kind": "public-events",
     "label": "個人＋組織の公開イベント・取得分",
@@ -176,6 +261,13 @@
   },
   "projects": [
     {
+      "name": "CRUD5thOfficial/crud5th-web",
+      "description": "",
+      "url": "https://github.com/CRUD5thOfficial/crud5th-web",
+      "stars": 0,
+      "language": "TypeScript"
+    },
+    {
       "name": "crudfifth/crudfifth",
       "description": "",
       "url": "https://github.com/crudfifth/crudfifth",
@@ -188,13 +280,6 @@
       "url": "https://github.com/crudfifth/www",
       "stars": 1,
       "language": ""
-    },
-    {
-      "name": "CRUD5thOfficial/crud5th-web",
-      "description": "",
-      "url": "https://github.com/CRUD5thOfficial/crud5th-web",
-      "stars": 0,
-      "language": "TypeScript"
     }
   ]
 }
