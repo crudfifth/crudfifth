@@ -61,7 +61,7 @@
       image.width = Number(svg.getAttribute('width'));
       image.height = Number(svg.getAttribute('height'));
       if (previousBlobUrl) URL.revokeObjectURL(previousBlobUrl);
-      status.textContent = `${theme === 'dark' ? '暗色' : '明色'} / ${isStill ? '静止画（完成状態）' : reducedMotion.matches ? '動きを減らす設定により静止表示' : 'アニメーション（10秒周期）'}`;
+      status.textContent = `${theme === 'dark' ? '暗色' : '明色'} / ${isStill ? '静止画（完成状態）' : reducedMotion.matches ? '動きを減らす設定により静止表示' : 'アニメーション（連続再生）'}`;
     } catch (error) { if (currentRequest === requestNumber) status.textContent = error.message; }
   }
   document.querySelector('#dark').addEventListener('click', () => { theme = 'dark'; updatePreview(); });

@@ -36,12 +36,12 @@ async function withTempDir(run) {
   try { await run(rootDir); } finally { await rm(rootDir, { recursive: true, force: true }); }
 }
 
-test('five sections animate and reduced motion preserves the final readable state', () => {
+test('all five sections have continuous decorative motion and readable reduced motion', () => {
   const svg = renderProfileSvg(profile, { theme: 'dark' });
   for (const section of ['intro', 'stats', 'activity', 'languages', 'stack']) {
     assert.match(svg, new RegExp(`data-section="${section}"`));
   }
-  for (const motion of ['typewriter', 'stagger-reveal', 'line-draw', 'point-pulse', 'bar-reveal']) {
+  for (const motion of ['rail-flow', 'neon-pulse', 'chromatic-shift', 'title-scan', 'activity-trail', 'bar-glint', 'stack-glint']) {
     assert.match(svg, new RegExp(`@keyframes ${motion}`));
   }
   assert.match(svg, /prefers-reduced-motion: reduce/);
@@ -49,6 +49,9 @@ test('five sections animate and reduced motion preserves the final readable stat
   assert.match(svg, /opacity: 1 !important/);
   assert.match(svg, /clip-path: none !important/);
   assert.match(svg, /stroke-dashoffset: 0 !important/);
+  assert.match(svg, /\.decorative\{display:none !important\}/);
+  assert.doesNotMatch(svg, /@keyframes (?:typewriter|stagger-reveal|line-draw|point-pulse|bar-reveal)/);
+  assert.doesNotMatch(svg, /scaleX\(|animation:[^;}]*10s/);
   assert.doesNotMatch(svg, /<script\b|<foreignObject\b|<image\b|<iframe\b|@import|@font-face/i);
   assert.doesNotMatch(svg, /(?:href|src)\s*=|url\(\s*["']?(?:https?:|data:|\/\/)/i);
   assert.doesNotMatch(svg, /<rect[^>]+(?:width="800"|height="\d+")[^>]+fill="(?!none)/);
@@ -220,13 +223,17 @@ test('every language is displayed in two columns with percentages and a content-
 });
 
 
-test('365 day points fit the same graph and keep their animation delays within a cycle', () => {
+test('365 day points remain fixed while an aria-hidden trail follows the real activity path', () => {
   const svg = renderProfileSvg(profile);
-  const points = [...svg.matchAll(/<circle class="point" cx="([\d.]+)" cy="([\d.]+)"[^>]+--delay:([\d.]+)s/g)];
+  const points = [...svg.matchAll(/<circle class="point" cx="([\d.]+)" cy="([\d.]+)"/g)];
   assert.equal(points.length, 365);
   assert.equal(Number(points[0][1]), 35);
   assert.equal(Number(points.at(-1)[1]), 765);
-  assert.ok(points.every((point) => Number(point[2]) >= 389 && Number(point[2]) <= 458 && Number(point[3]) < 2));
+  assert.ok(points.every((point) => Number(point[2]) >= 389 && Number(point[2]) <= 458));
+  const base = svg.match(/<path class="activity-line"[^>]* d="([^"]+)"/)[1];
+  const trail = svg.match(/<path class="activity-trail decorative"[^>]* d="([^"]+)"/)[1];
+  assert.equal(trail, base);
+  assert.match(svg, /class="activity-trail decorative"[^>]*aria-hidden="true"/);
 });
 
 test('incomplete dates and other-person/public-only scope fail before rendering', () => {
@@ -266,4 +273,17 @@ test('a README preparation failure preserves both previous assets', async () => 
     await assert.rejects(generateProfileAssets({ inputPath, outputDir: rootDir }));
     for (const theme of ['dark', 'light']) assert.equal(await readFile(path.join(rootDir, `assets/profile-${theme}.svg`), 'utf8'), `previous-${theme}`);
   });
+});
+
+
+test('motion keeps actual bar widths and does not animate any data label or circle', () => {
+  const svg = renderProfileSvg(profile);
+  const bars = [...svg.matchAll(/<rect class="bar"[^>]*width="([\d.]+)"/g)].map((match) => Number(match[1]));
+  assert.deepEqual(bars, [258.75, 86.25]);
+  assert.doesNotMatch(svg, /\.(?:bar|point|metric|metric-label|intro-type|stat-reveal|stack-reveal)\{[^}]*animation:/);
+  assert.match(svg, /class="bar-glint decorative"/);
+  assert.match(svg, /class="metric-circuit decorative"/);
+  assert.match(svg, /class="stack-glint decorative"/);
+  assert.match(svg, /aria-hidden="true"/);
+  assert.doesNotMatch(svg, />[^<]*(?:REALTIME|LIVE)[^<]*</);
 });

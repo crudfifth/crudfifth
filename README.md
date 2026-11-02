@@ -1,9 +1,9 @@
 # Welcome to CRUD5th's GitHub Profile
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-dark.svg?v=b6ea08f0850d">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-light.svg?v=c50b34e52e25">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-light.svg?v=c50b34e52e25" width="800" alt="CRUD5th profile: introduction, crudfifth + CRUD5thOfficial public repository statistics and crudfifth personal daily contributions across public and private activity over the last 365 days, language code-byte percentages across public and private non-fork repositories, personal followers, and tech stack">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-dark.svg?v=7b933649910f">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-light.svg?v=538d76f2dd8e">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-light.svg?v=538d76f2dd8e" width="800" alt="CRUD5th profile: introduction, crudfifth + CRUD5thOfficial public repository statistics and crudfifth personal daily contributions across public and private activity over the last 365 days, language code-byte percentages across public and private non-fork repositories, personal followers, and tech stack">
 </picture>
 
 ## Tech Stack

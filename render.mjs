@@ -132,25 +132,43 @@ function sectionLabel(index, label, y, trailing = '') {
 
 function motionStyles(theme) {
   const palette = theme === 'dark'
-    ? { foreground: '#e6edf3', muted: '#9ba7b4', rule: '#303b46', accent: '#ff944d', soft: '#1c2833' }
-    : { foreground: '#202831', muted: '#576571', rule: '#cbd2d9', accent: '#a8440b', soft: '#e3e8ed' };
-  return `:root{--ink:${palette.foreground};--muted:${palette.muted};--rule:${palette.rule};--accent:${palette.accent};--soft:${palette.soft};color-scheme:${theme}}
+    ? { foreground: '#e6edf3', muted: '#9ba7b4', rule: '#263b48', accent: '#36f4ef', secondary: '#ff4cce', soft: '#19303b' }
+    : { foreground: '#152537', muted: '#526477', rule: '#c3d5df', accent: '#006b79', secondary: '#a61c78', soft: '#e0eaf0' };
+  return `:root{--ink:${palette.foreground};--muted:${palette.muted};--rule:${palette.rule};--accent:${palette.accent};--secondary:${palette.secondary};--soft:${palette.soft};color-scheme:${theme}}
 svg{font-size:14px}text{font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;fill:var(--ink)}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.muted{fill:var(--muted)}.accent{fill:var(--accent)}
 .eyebrow{font-size:11px;letter-spacing:1.1px}.title{font-size:84px;font-weight:900;letter-spacing:-6px}.owner{font-size:13px}
-.rule{stroke:var(--rule);stroke-width:1}.metric{font-size:40px;font-weight:700;letter-spacing:-1.5px}.metric-label{font-size:12px}
+.rule{fill:none;stroke:var(--rule);stroke-width:1}.metric{font-size:40px;font-weight:700;letter-spacing:-1.5px}.metric-label{font-size:12px}
 .activity-line{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:0}
-.point{fill:var(--accent)}.track{fill:var(--soft)}.bar{fill:var(--accent);transform-box:fill-box;transform-origin:left center}
-.intro-type{animation:typewriter 10s steps(52,end) infinite}.stat-reveal,.stack-reveal{animation:stagger-reveal 10s ease-out infinite;animation-delay:var(--delay,0s)}
-.activity-line{animation:line-draw 10s ease-in-out infinite}.point{animation:point-pulse 10s ease-out infinite;transform-box:fill-box;transform-origin:center;animation-delay:var(--delay,0s)}
-.bar{animation:bar-reveal 10s cubic-bezier(.22,.61,.36,1) infinite;animation-delay:var(--delay,0s)}
-@keyframes typewriter{0%{clip-path:inset(0 100% 0 0)}16%,97%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 0 0 0)}}
-@keyframes stagger-reveal{0%{opacity:.12;transform:translateY(5px)}12%,100%{opacity:1;transform:translateY(0)}}
-@keyframes line-draw{0%{stroke-dashoffset:1;opacity:.3}22%,100%{stroke-dashoffset:0;opacity:1}}
-@keyframes point-pulse{0%,18%{opacity:.45;transform:scale(.6)}24%{opacity:1;transform:scale(1.8)}32%,100%{opacity:1;transform:scale(1)}}
-@keyframes bar-reveal{0%{transform:scaleX(0)}20%,100%{transform:scaleX(1)}}
-@media(prefers-reduced-motion: reduce){*,*::before,*::after{animation: none !important;opacity: 1 !important;transform:none !important;clip-path: none !important;stroke-dashoffset: 0 !important}}
+.point{fill:var(--accent)}.track{fill:var(--soft)}.bar{fill:var(--accent)}
+.circuit-notch{fill:none;stroke:var(--secondary);stroke-width:1;opacity:.6}
+.section-rail{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:.12 .88;animation:rail-flow 4.8s linear infinite;animation-delay:var(--delay,0s)}
+.section-rail.secondary{stroke:var(--secondary);stroke-width:1;stroke-dasharray:.04 .96;animation-duration:6.4s;animation-direction:reverse;opacity:.72}
+.title-ghost{fill:var(--accent);opacity:.34;animation:chromatic-shift 3.8s ease-in-out infinite alternate;clip-path:inset(24% 0 52% 0)}
+.title-ghost.secondary{fill:var(--secondary);animation-delay:-1.9s;animation-direction:alternate-reverse;clip-path:inset(67% 0 13% 0)}
+.title-scan{fill:none;stroke:var(--accent);stroke-width:1;stroke-dasharray:28 55 2 16;animation:title-scan 3.3s linear infinite;opacity:.7}
+.metric-circuit{fill:none;stroke:var(--accent);stroke-width:1.4;stroke-dasharray:.1 .9;animation:rail-flow 3.7s linear infinite,neon-pulse 2.8s ease-in-out infinite alternate;animation-delay:var(--delay,0s)}
+.activity-trail{fill:none;stroke:var(--secondary);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.035 .965;animation:activity-trail 5.6s linear infinite;opacity:.88}
+.bar-glint{fill:none;stroke:var(--secondary);stroke-width:1;stroke-linecap:round;stroke-dasharray:.08 .92;animation:bar-glint 3.6s linear infinite;animation-delay:var(--delay,0s);opacity:.7}
+.stack-glint{fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-dasharray:.24 .76;animation:stack-glint 2.7s linear infinite;animation-delay:var(--delay,0s)}
+@keyframes rail-flow{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes neon-pulse{from{opacity:.38}to{opacity:1}}
+@keyframes chromatic-shift{0%{transform:translate(-1.4px,0)}50%{transform:translate(.7px,.5px)}100%{transform:translate(1.4px,0)}}
+@keyframes title-scan{from{stroke-dashoffset:101}to{stroke-dashoffset:0}}
+@keyframes activity-trail{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes bar-glint{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@keyframes stack-glint{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
+@media(prefers-reduced-motion: reduce){*,*::before,*::after{animation: none !important;opacity: 1 !important;transform:none !important;clip-path: none !important;stroke-dashoffset: 0 !important}.decorative{display:none !important}}
 `;
+}
+
+function sectionRail(y, phase) {
+  return `<path d="M32 ${y} H768" class="rule"/>
+<g class="decorative" aria-hidden="true" style="--delay:-${phase}s">
+<path d="M32 ${y - 5} V${y} H46 M754 ${y} H768 V${y + 5}" class="circuit-notch"/>
+<path d="M32 ${y} H768" pathLength="1" class="section-rail"/>
+<path d="M32 ${y} H768" pathLength="1" class="section-rail secondary"/>
+</g>`;
 }
 
 function renderIntro(profile) {
@@ -159,10 +177,13 @@ function renderIntro(profile) {
   return `<g data-section="intro">
 ${textNode(32, 27, 'INDEPENDENT ENGINEER / PUBLIC PROFILE', 'mono eyebrow muted')}
 ${textNode(768, 27, `@${truncateText(profile.owner, 160, 11, true)}`, 'mono eyebrow accent', 'text-anchor="end"')}
+<g class="decorative" aria-hidden="true">${textNode(28, 111, 'CRUD5th', 'title title-ghost')}${textNode(28, 111, 'CRUD5th', 'title title-ghost secondary')}</g>
 ${textNode(28, 111, 'CRUD5th', 'title')}
+<path d="M35 122 H382" class="title-scan decorative" aria-hidden="true"/>
 ${textNode(34, 137, truncateText(profile.profile.name, 700, 13), 'owner muted')}
-<g class="intro-type">${bioLines.map((line, index) => textNode(34, 166 + index * 22, line)).join('')}</g>
+<g>${bioLines.map((line, index) => textNode(34, 166 + index * 22, line)).join('')}</g>
 ${textNode(34, 214, projectNames ? `RECENT REPOS  ${truncateText(projectNames, 594, 11, true)}` : 'RECENT REPOS  取得したrepoなし', 'mono eyebrow muted')}
+${sectionRail(232, 0.6)}
 </g>`;
 }
 
@@ -172,7 +193,14 @@ function renderStats(profile) {
     ['公開repoのstars', profile.repositories.stars], ['個人フォロワー', profile.profile.followers],
   ];
   return `<g data-section="stats">${sectionLabel('01', 'GITHUB SNAPSHOT', 253, 'crudfifth + CRUD5thOfficial')}
-${metrics.map(([label, count], index) => `<g class="stat-reveal" style="--delay:${index * 0.12}s">${textNode(34 + index * 186, 309, numberFormat.format(count), 'mono metric')}${textNode(36 + index * 186, 332, label, 'metric-label muted')}</g>`).join('')}
+${metrics.map(([label, count], index) => {
+    const x = 34 + index * 186;
+    const circuit = `M${x} 287 V275 H${x + 18} M${x + 144} 275 H${x + 161} V287 M${x + 161} 319 V339 H${x + 143} M${x + 18} 339 H${x} V326`;
+    return `<g>${textNode(x, 309, numberFormat.format(count), 'mono metric')}${textNode(x + 2, 332, label, 'metric-label muted')}
+<path d="${circuit}" class="rule decorative" aria-hidden="true"/>
+<path d="${circuit}" class="metric-circuit decorative" pathLength="1" style="--delay:-${(index * 0.7).toFixed(1)}s" aria-hidden="true"/></g>`;
+  }).join('')}
+${sectionRail(350, 1.7)}
 </g>`;
 }
 
@@ -188,13 +216,15 @@ function renderActivity(profile) {
   }));
   const pathData = points.map((point, index) => `${index ? 'L' : 'M'}${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ');
   const chart = `<path class="activity-line" pathLength="1" d="${pathData}"/>
-${points.map((point, index) => `<circle class="point" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="1.8" style="--delay:${((index % 30) * 0.02).toFixed(2)}s"><title>${point.date}: ${point.count} contributions</title></circle>`).join('')}`;
+${points.map((point) => `<circle class="point" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="1.8"><title>${point.date}: ${point.count} contributions</title></circle>`).join('')}
+<path class="activity-trail decorative" pathLength="1" d="${pathData}" aria-hidden="true"/>`;
   const range = `${activity.since} — ${activity.until}`;
   return `<g data-section="activity">${sectionLabel('02', 'GITHUB ACTIVITY', 372, `${numberFormat.format(activity.totalCount)} contributions`)}
 <path d="M35 458 H765" class="rule"/>
 ${chart}
 ${textNode(35, 481, range, 'mono muted', 'font-size="11"')}
 ${textNode(765, 481, activity.label, 'muted', 'text-anchor="end" font-size="11"')}
+${sectionRail(519, 2.8)}
 </g>`;
 }
 
@@ -209,7 +239,8 @@ function renderLanguages(profile, y) {
     return `${textNode(x, baseline, language.name, 'mono', 'font-size="12"')}
 ${textNode(x + 345, baseline, fraction * 100 < 0.1 ? '<0.1%' : `${(fraction * 100).toFixed(1)}%`, 'mono muted', 'text-anchor="end" font-size="12"')}
 <rect class="track" x="${x}" y="${baseline + 8}" width="345" height="4"/>
-<rect class="bar" x="${x}" y="${baseline + 8}" width="${(345 * fraction).toFixed(2)}" height="4" style="--delay:${index * 0.06}s"/>`;
+<rect class="bar" x="${x}" y="${baseline + 8}" width="${(345 * fraction).toFixed(2)}" height="4"/>
+<path d="M${x} ${baseline + 15} H${x + 345}" class="bar-glint decorative" pathLength="1" style="--delay:-${(index * 0.21).toFixed(2)}s" aria-hidden="true"/>`;
   }).join('');
   const empty = profile.languages.length ? '' : textNode(35, y + 65, '取得できた言語コード量なし', 'muted');
   const visibility = profile.languageScope.visibility === 'public-and-private' ? '公開＋非公開' : '公開';
@@ -217,6 +248,7 @@ ${textNode(x + 345, baseline, fraction * 100 < 0.1 ? '<0.1%' : `${(fraction * 10
 ${textNode(35, y + 26, `言語別コード量 · 個人＋組織・${visibility}・非fork`, 'muted', 'font-size="12"')}
 ${textNode(765, y + 26, `${numberFormat.format(totalBytes)} bytes`, 'mono muted', 'font-size="12" text-anchor="end"')}
 ${rows}${empty}
+${sectionRail(y + 57 + Math.max(1, Math.ceil(profile.languages.length / 2)) * 35, 3.9)}
 </g>`;
 }
 
@@ -224,7 +256,9 @@ function renderStack(y) {
   let x = 35;
   return `<g data-section="stack">${sectionLabel('04', 'TECH STACK', y)}
 ${stackNames.map((name, index) => {
-    const element = `<g class="stack-reveal" style="--delay:${index * 0.1}s">${textNode(x, y + 38, name, 'mono', 'font-size="16"')}${index < stackNames.length - 1 ? textNode(x + textWidth(name, 16, true) + 14, y + 38, '/', 'mono accent') : ''}</g>`;
+    const element = `<g>${textNode(x, y + 38, name, 'mono', 'font-size="16"')}${index < stackNames.length - 1 ? textNode(x + textWidth(name, 16, true) + 14, y + 38, '/', 'mono accent') : ''}
+<path d="M${x} ${y + 47} h${textWidth(name, 16, true).toFixed(2)}" class="rule decorative" aria-hidden="true"/>
+<path d="M${x} ${y + 47} h${textWidth(name, 16, true).toFixed(2)}" class="stack-glint decorative" pathLength="1" style="--delay:-${(index * 0.43).toFixed(2)}s" aria-hidden="true"/></g>`;
     x += textWidth(name, 16, true) + 42;
     return element;
   }).join('')}
@@ -244,7 +278,6 @@ export function renderProfileSvg(input, { theme = 'dark' } = {}) {
 <desc id="profile-description">${xmlEscape(description)}</desc>
 <style>${motionStyles(theme)}</style>
 ${renderIntro(profile)}
-<path d="M32 232 H768 M32 350 H768 M32 519 H768 M32 ${stackY - 25} H768" class="rule"/>
 ${renderStats(profile)}${renderActivity(profile)}${renderLanguages(profile, languageY)}${renderStack(stackY)}
 ${textNode(765, height - 16, `UPDATED ${new Date(profile.generatedAt).toISOString().slice(0, 10)} UTC`, 'mono eyebrow muted', 'text-anchor="end"')}
 </svg>\n`;
