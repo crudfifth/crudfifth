@@ -1,9 +1,9 @@
 # Welcome to CRUD5th's GitHub Profile
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="assets/profile-dark.svg">
-  <source media="(prefers-color-scheme: light)" srcset="assets/profile-light.svg">
-  <img src="assets/profile-light.svg" width="800" alt="CRUD5th profile: introduction, crudfifth + CRUD5thOfficial public statistics and retrieved public events, language code-byte percentages across public and private non-fork repositories, personal followers, and tech stack">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/profile-dark.svg?v=9c4c20a19975">
+  <source media="(prefers-color-scheme: light)" srcset="assets/profile-light.svg?v=b33f20819513">
+  <img src="assets/profile-light.svg?v=b33f20819513" width="800" alt="CRUD5th profile: introduction, crudfifth + CRUD5thOfficial public statistics and retrieved public events, language code-byte percentages across public and private non-fork repositories, personal followers, and tech stack">
 </picture>
 
 ## Tech Stack
