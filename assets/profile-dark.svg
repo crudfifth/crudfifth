@@ -15,11 +15,14 @@ svg{font-size:14px}text{font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic
 .title-ghost.secondary{fill:var(--secondary);animation-delay:-1.9s;animation-direction:alternate-reverse;clip-path:inset(67% 0 13% 0)}
 .title-scan{fill:none;stroke:var(--accent);stroke-width:1;stroke-dasharray:28 55 2 16;animation:title-scan 3.3s linear infinite;opacity:.7}
 .metric-circuit{fill:none;stroke:var(--accent);stroke-width:1.4;stroke-dasharray:.1 .9;animation:rail-flow 3.7s linear infinite,neon-pulse 2.8s ease-in-out infinite alternate;animation-delay:var(--delay,0s)}
+.metric-glow{filter:url(#metric-glow-blur);animation:metric-glow-pulse 4.2s ease-in-out infinite;animation-delay:var(--delay,0s)}
+.metric-glow-frame{fill:none;stroke:var(--accent);stroke-width:3.5}.metric-glow-value{fill:var(--accent)}
 .activity-trail{fill:none;stroke:var(--secondary);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.035 .965;animation:activity-trail 5.6s linear infinite;opacity:.88}
 .bar-glint{fill:none;stroke:var(--secondary);stroke-width:1;stroke-linecap:round;stroke-dasharray:.08 .92;animation:bar-glint 3.6s linear infinite;animation-delay:var(--delay,0s);opacity:.7}
 .stack-glint{fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-dasharray:.24 .76;animation:stack-glint 2.7s linear infinite;animation-delay:var(--delay,0s)}
 @keyframes rail-flow{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 @keyframes neon-pulse{from{opacity:.38}to{opacity:1}}
+@keyframes metric-glow-pulse{0%,100%{opacity:.22}50%{opacity:.85}}
 @keyframes chromatic-shift{0%{transform:translate(-1.4px,0)}50%{transform:translate(.7px,.5px)}100%{transform:translate(1.4px,0)}}
 @keyframes title-scan{from{stroke-dashoffset:101}to{stroke-dashoffset:0}}
 @keyframes activity-trail{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
@@ -44,15 +47,20 @@ svg{font-size:14px}text{font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic
 </g>
 </g>
 <g data-section="stats"><text x="32" y="253" class="mono accent eyebrow" >01</text><text x="67" y="253" class="mono eyebrow muted" >GITHUB SNAPSHOT</text><text x="768" y="253" class="mono eyebrow muted" text-anchor="end">crudfifth + CRUD5thOfficial</text>
-<g><text x="34" y="309" class="mono metric" >292</text><text x="36" y="332" class="metric-label muted" >公開repo</text>
-<path d="M34 287 V275 H52 M178 275 H195 V287 M195 319 V339 H177 M52 339 H34 V326" class="rule decorative" aria-hidden="true"/>
-<path d="M34 287 V275 H52 M178 275 H195 V287 M195 319 V339 H177 M52 339 H34 V326" class="metric-circuit decorative" pathLength="1" style="--delay:-0.0s" aria-hidden="true"/></g><g><text x="220" y="309" class="mono metric" >291</text><text x="222" y="332" class="metric-label muted" >公開・非fork repo</text>
-<path d="M220 287 V275 H238 M364 275 H381 V287 M381 319 V339 H363 M238 339 H220 V326" class="rule decorative" aria-hidden="true"/>
-<path d="M220 287 V275 H238 M364 275 H381 V287 M381 319 V339 H363 M238 339 H220 V326" class="metric-circuit decorative" pathLength="1" style="--delay:-0.7s" aria-hidden="true"/></g><g><text x="406" y="309" class="mono metric" >286</text><text x="408" y="332" class="metric-label muted" >公開repoのstars</text>
-<path d="M406 287 V275 H424 M550 275 H567 V287 M567 319 V339 H549 M424 339 H406 V326" class="rule decorative" aria-hidden="true"/>
-<path d="M406 287 V275 H424 M550 275 H567 V287 M567 319 V339 H549 M424 339 H406 V326" class="metric-circuit decorative" pathLength="1" style="--delay:-1.4s" aria-hidden="true"/></g><g><text x="592" y="309" class="mono metric" >4</text><text x="594" y="332" class="metric-label muted" >個人フォロワー</text>
-<path d="M592 287 V275 H610 M736 275 H753 V287 M753 319 V339 H735 M610 339 H592 V326" class="rule decorative" aria-hidden="true"/>
-<path d="M592 287 V275 H610 M736 275 H753 V287 M753 319 V339 H735 M610 339 H592 V326" class="metric-circuit decorative" pathLength="1" style="--delay:-2.1s" aria-hidden="true"/></g>
+<defs><filter id="metric-glow-blur" x="-25%" y="-50%" width="150%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
+<g><g class="metric-glow decorative" style="--delay:-0.0s" aria-hidden="true"><path d="M34 281 V265 H52 M178 265 H195 V281 M195 327 V343 H177 M52 343 H34 V327" class="metric-glow-frame"/><text x="46" y="310" class="mono metric metric-glow-value" >292</text></g>
+<text x="46" y="310" class="mono metric" >292</text><text x="46" y="333" class="metric-label muted" >公開repo</text>
+<path d="M34 281 V265 H52 M178 265 H195 V281 M195 327 V343 H177 M52 343 H34 V327" class="rule decorative" aria-hidden="true"/>
+<path d="M34 281 V265 H52 M178 265 H195 V281 M195 327 V343 H177 M52 343 H34 V327" class="metric-circuit decorative" pathLength="1" style="--delay:-0.0s" aria-hidden="true"/></g><g><g class="metric-glow decorative" style="--delay:-0.8s" aria-hidden="true"><path d="M220 281 V265 H238 M364 265 H381 V281 M381 327 V343 H363 M238 343 H220 V327" class="metric-glow-frame"/><text x="232" y="310" class="mono metric metric-glow-value" >291</text></g>
+<text x="232" y="310" class="mono metric" >291</text><text x="232" y="333" class="metric-label muted" >公開・非fork repo</text>
+<path d="M220 281 V265 H238 M364 265 H381 V281 M381 327 V343 H363 M238 343 H220 V327" class="rule decorative" aria-hidden="true"/>
+<path d="M220 281 V265 H238 M364 265 H381 V281 M381 327 V343 H363 M238 343 H220 V327" class="metric-circuit decorative" pathLength="1" style="--delay:-0.7s" aria-hidden="true"/></g><g><g class="metric-glow decorative" style="--delay:-1.6s" aria-hidden="true"><path d="M406 281 V265 H424 M550 265 H567 V281 M567 327 V343 H549 M424 343 H406 V327" class="metric-glow-frame"/><text x="418" y="310" class="mono metric metric-glow-value" >286</text></g>
+<text x="418" y="310" class="mono metric" >286</text><text x="418" y="333" class="metric-label muted" >公開repoのstars</text>
+<path d="M406 281 V265 H424 M550 265 H567 V281 M567 327 V343 H549 M424 343 H406 V327" class="rule decorative" aria-hidden="true"/>
+<path d="M406 281 V265 H424 M550 265 H567 V281 M567 327 V343 H549 M424 343 H406 V327" class="metric-circuit decorative" pathLength="1" style="--delay:-1.4s" aria-hidden="true"/></g><g><g class="metric-glow decorative" style="--delay:-2.4s" aria-hidden="true"><path d="M592 281 V265 H610 M736 265 H753 V281 M753 327 V343 H735 M610 343 H592 V327" class="metric-glow-frame"/><text x="604" y="310" class="mono metric metric-glow-value" >4</text></g>
+<text x="604" y="310" class="mono metric" >4</text><text x="604" y="333" class="metric-label muted" >個人フォロワー</text>
+<path d="M592 281 V265 H610 M736 265 H753 V281 M753 327 V343 H735 M610 343 H592 V327" class="rule decorative" aria-hidden="true"/>
+<path d="M592 281 V265 H610 M736 265 H753 V281 M753 327 V343 H735 M610 343 H592 V327" class="metric-circuit decorative" pathLength="1" style="--delay:-2.1s" aria-hidden="true"/></g>
 <path d="M32 350 H768" class="rule"/>
 <g class="decorative" aria-hidden="true" style="--delay:-1.7s">
 <path d="M32 345 V350 H46 M754 350 H768 V355" class="circuit-notch"/>
