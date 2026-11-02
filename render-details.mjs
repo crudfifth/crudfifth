@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { profileIcons } from './profile-icons.mjs';
 
 const profileRoot = path.dirname(fileURLToPath(import.meta.url));
 const detailsStart = '<!-- PROFILE DETAILS START -->';
@@ -37,6 +38,11 @@ function textNode(x, y, value, className = '', attributes = '') {
   return `<text x="${x}" y="${y}" class="${className}" ${attributes}>${xmlEscape(value)}</text>`;
 }
 
+function renderIcon(key, x, y, size) {
+  const icon = profileIcons[key];
+  return `<g class="profile-icon${icon.stroke ? ' line-icon' : ''}" transform="translate(${x} ${y}) scale(${size / 24})" aria-hidden="true">${icon.paths.map((d) => `<path d="${d}"/>`).join('')}</g>`;
+}
+
 function motionStyles(theme) {
   if (!['dark', 'light'].includes(theme)) throw new TypeError('Theme must be dark or light');
   const palette = theme === 'dark'
@@ -53,6 +59,7 @@ text{font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;fill:v
 .halo text{fill:var(--accent);stroke:var(--accent);stroke-width:.4}.halo path{stroke:var(--accent);stroke-width:3;fill:none}
 .technology{font-size:30px;font-weight:600;letter-spacing:-1px}.stack-term{font-size:22px}.stack-divider{fill:var(--secondary);font-size:18px}.group-label{font-size:13px;letter-spacing:.8px}.body{font-size:22px}.process{font-size:18px}
 .card-name{font-size:24px;font-weight:600;letter-spacing:-.4px}.card-label{font-size:14px}.card-index{font-size:11px;letter-spacing:1px}
+.profile-icon{fill:var(--accent)}.line-icon{fill:none;stroke:var(--accent);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.icon-well{fill:none;stroke:var(--rule);stroke-width:1}
 @keyframes rail-flow{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 @keyframes halo-pulse{0%,100%{opacity:var(--halo-low)}50%{opacity:var(--halo-peak)}}
 @media(prefers-reduced-motion: reduce){*,*::before,*::after{animation: none !important}.decorative{display:none !important}}
@@ -89,8 +96,9 @@ function renderTechnologyTiles() {
     const x = 32 + index % 3 * 250;
     const y = 112 + Math.floor(index / 3) * 94;
     const outline = `M${x} ${y + 12} L${x + 12} ${y} H${x + 236} V${y + 66} L${x + 224} ${y + 78} H${x} Z`;
-    const label = textNode(x + 118, y + 48, name, 'mono technology', `text-anchor="middle"${name === 'TypeScript' ? ' style="font-size:27px"' : ''}`);
+    const label = textNode(x + 62, y + 48, name, 'mono technology', name === 'TypeScript' ? 'style="font-size:27px"' : '');
     return `<g data-featured="${name}">${glow(`<path d="${outline}" class="frame"/>${label}`, index * .67)}
+${renderIcon(name.toLowerCase(), x + 18, y + 24, 30)}
 <path d="M${x + 1} ${y + 23} V${y + 12} L${x + 12} ${y + 1} H${x + 25}" class="notch"/>
 <path d="${outline}" pathLength="1" class="rail decorative" style="--delay:-${index * .67}s" aria-hidden="true"/>
 </g>`;
@@ -138,9 +146,11 @@ export function renderLinkCardSvg(slug, { theme = 'dark' } = {}) {
   if (index < 0) throw new TypeError('Unknown social link');
   const link = socialLinks[index];
   const outline = 'M12 6 H384 V86 L372 98 H6 V12 Z';
-  const name = textNode(24, 45, link.name, 'card-name');
+  const name = textNode(88, 45, link.name, 'card-name');
   const content = `${glow(`<path d="${outline}" class="frame"/>${name}`, index * .43)}
-${textNode(24, 72, link.label, 'mono muted card-label')}
+<rect x="24" y="28" width="48" height="48" rx="11" class="icon-well"/>
+${renderIcon(profileIcons[slug] ? slug : 'web', 32, 36, 32)}
+${textNode(88, 72, link.label, 'mono muted card-label')}
 ${textNode(363, 26, String(index + 1).padStart(2, '0'), 'mono muted card-index', 'text-anchor="end"')}
 <path d="M344 62 H362 V44 M344 62 L362 44" class="notch"/>
 <path d="M7 28 V13 L13 7 H32 M359 97 H371 L383 85 V73" class="notch"/>

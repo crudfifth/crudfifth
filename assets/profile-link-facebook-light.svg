@@ -12,13 +12,16 @@ text{font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;fill:v
 .halo text{fill:var(--accent);stroke:var(--accent);stroke-width:.4}.halo path{stroke:var(--accent);stroke-width:3;fill:none}
 .technology{font-size:30px;font-weight:600;letter-spacing:-1px}.stack-term{font-size:22px}.stack-divider{fill:var(--secondary);font-size:18px}.group-label{font-size:13px;letter-spacing:.8px}.body{font-size:22px}.process{font-size:18px}
 .card-name{font-size:24px;font-weight:600;letter-spacing:-.4px}.card-label{font-size:14px}.card-index{font-size:11px;letter-spacing:1px}
+.profile-icon{fill:var(--accent)}.line-icon{fill:none;stroke:var(--accent);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.icon-well{fill:none;stroke:var(--rule);stroke-width:1}
 @keyframes rail-flow{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 @keyframes halo-pulse{0%,100%{opacity:var(--halo-low)}50%{opacity:var(--halo-peak)}}
 @media(prefers-reduced-motion: reduce){*,*::before,*::after{animation: none !important}.decorative{display:none !important}}
 </style>
 <defs><filter id="halo-blur" x="-15%" y="-50%" width="130%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="halo decorative " style="--delay:-1.29s" aria-hidden="true"><path d="M12 6 H384 V86 L372 98 H6 V12 Z" class="frame"/><text x="24" y="45" class="card-name" >Facebook</text></g><path d="M12 6 H384 V86 L372 98 H6 V12 Z" class="frame"/><text x="24" y="45" class="card-name" >Facebook</text>
-<text x="24" y="72" class="mono muted card-label" >facebook.com</text>
+<g class="halo decorative " style="--delay:-1.29s" aria-hidden="true"><path d="M12 6 H384 V86 L372 98 H6 V12 Z" class="frame"/><text x="88" y="45" class="card-name" >Facebook</text></g><path d="M12 6 H384 V86 L372 98 H6 V12 Z" class="frame"/><text x="88" y="45" class="card-name" >Facebook</text>
+<rect x="24" y="28" width="48" height="48" rx="11" class="icon-well"/>
+<g class="profile-icon" transform="translate(32 36) scale(1.3333333333333333)" aria-hidden="true"><path d="M9.101 23.691v-7.98H6.627v-3.667h2.474v-1.58c0-4.085 1.848-5.978 5.858-5.978.401 0 .955.042 1.468.103a8.68 8.68 0 0 1 1.141.195v3.325a8.623 8.623 0 0 0-.653-.036 26.805 26.805 0 0 0-.733-.009c-.707 0-1.259.096-1.675.309a1.686 1.686 0 0 0-.679.622c-.258.42-.374.995-.374 1.752v1.297h3.919l-.386 2.103-.287 1.564h-3.246v8.245C19.396 23.238 24 18.179 24 12.044c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.628 3.874 10.35 9.101 11.647Z"/></g>
+<text x="88" y="72" class="mono muted card-label" >facebook.com</text>
 <text x="363" y="26" class="mono muted card-index" text-anchor="end">04</text>
 <path d="M344 62 H362 V44 M344 62 L362 44" class="notch"/>
 <path d="M7 28 V13 L13 7 H32 M359 97 H371 L383 85 V73" class="notch"/>

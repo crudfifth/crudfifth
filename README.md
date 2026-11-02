@@ -8,100 +8,100 @@
 
 <!-- PROFILE DETAILS START -->
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-details-dark.svg?v=b503254695cd">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-details-light.svg?v=e9ee302dbe74">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-details-light.svg?v=e9ee302dbe74" width="800" alt="Tech Stack: Elixir, Ada, Zig, Rust, TypeScript, Python and a broad web, server and systems toolkit. About Tsunami / CRUD5th: full-stack web, AI &amp; LLMs and low-level OS development. Design → Build → Release → Operate. Connect below.">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-details-dark.svg?v=e5b345204ad4">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-details-light.svg?v=de629039fb5c">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-details-light.svg?v=de629039fb5c" width="800" alt="Tech Stack: Elixir, Ada, Zig, Rust, TypeScript, Python and a broad web, server and systems toolkit. About Tsunami / CRUD5th: full-stack web, AI &amp; LLMs and low-level OS development. Design → Build → Release → Operate. Connect below.">
 </picture>
 
 <a href="https://x.com/CRUD5th">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-x-dark.svg?v=18b52e62b7ed">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-x-light.svg?v=56f4675d3ad1">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-x-light.svg?v=56f4675d3ad1" width="390" alt="X: @CRUD5th">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-x-dark.svg?v=49f3701ce5d0">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-x-light.svg?v=54c0e6aed5c5">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-x-light.svg?v=54c0e6aed5c5" width="390" alt="X: @CRUD5th">
 </picture>
 </a>
 <a href="https://totomediasite.com/">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-portal-dark.svg?v=c0f5ca75a7ee">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-portal-light.svg?v=7cdde9a6210c">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-portal-light.svg?v=7cdde9a6210c" width="390" alt="Portal Site: totomediasite.com">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-portal-dark.svg?v=617b735b119f">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-portal-light.svg?v=90d8938ce498">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-portal-light.svg?v=90d8938ce498" width="390" alt="Portal Site: totomediasite.com">
 </picture>
 </a>
 <a href="https://zenn.dev/crudfifth">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-zenn-dark.svg?v=0cdbfef6dbee">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-zenn-light.svg?v=0c7244deadd0">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-zenn-light.svg?v=0c7244deadd0" width="390" alt="Zenn: zenn.dev/crudfifth">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-zenn-dark.svg?v=c70a94722076">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-zenn-light.svg?v=654cb56f2d28">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-zenn-light.svg?v=654cb56f2d28" width="390" alt="Zenn: zenn.dev/crudfifth">
 </picture>
 </a>
 <a href="https://www.facebook.com/profile.php?id=61554965062342">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-facebook-dark.svg?v=5412e13cb653">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-facebook-light.svg?v=158ad536ec1d">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-facebook-light.svg?v=158ad536ec1d" width="390" alt="Facebook: facebook.com">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-facebook-dark.svg?v=03c0f9fb345a">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-facebook-light.svg?v=d08c38ae9d8a">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-facebook-light.svg?v=d08c38ae9d8a" width="390" alt="Facebook: facebook.com">
 </picture>
 </a>
 <a href="https://qiita.com/CRUD5th">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-qiita-dark.svg?v=457452666141">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-qiita-light.svg?v=a81fa1723ede">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-qiita-light.svg?v=a81fa1723ede" width="390" alt="Qiita: qiita.com/CRUD5th">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-qiita-dark.svg?v=30a99d92a82e">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-qiita-light.svg?v=8a0ae4be4e16">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-qiita-light.svg?v=8a0ae4be4e16" width="390" alt="Qiita: qiita.com/CRUD5th">
 </picture>
 </a>
 <a href="https://blood-raven.com/">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-blood-raven-dark.svg?v=9f8226d248d7">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-blood-raven-light.svg?v=678e1f8d08aa">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-blood-raven-light.svg?v=678e1f8d08aa" width="390" alt="Blood Raven: blood-raven.com">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-blood-raven-dark.svg?v=b8c88da34e2d">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-blood-raven-light.svg?v=138833d9720f">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-blood-raven-light.svg?v=138833d9720f" width="390" alt="Blood Raven: blood-raven.com">
 </picture>
 </a>
 <a href="https://synvrea.com/">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-synvrea-dark.svg?v=7b08a02e847b">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-synvrea-light.svg?v=689c4984a1c5">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-synvrea-light.svg?v=689c4984a1c5" width="390" alt="SynVRea: synvrea.com">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-synvrea-dark.svg?v=386c3f061929">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-synvrea-light.svg?v=793b043d6cc6">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-synvrea-light.svg?v=793b043d6cc6" width="390" alt="SynVRea: synvrea.com">
 </picture>
 </a>
 <a href="https://crudfifth.com/">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-official-dark.svg?v=f9a54223a467">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-official-light.svg?v=357e96643246">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-official-light.svg?v=357e96643246" width="390" alt="CRUD5th Official: crudfifth.com">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-official-dark.svg?v=a5dbc9e03a1a">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-official-light.svg?v=e98b520f29ba">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-official-light.svg?v=e98b520f29ba" width="390" alt="CRUD5th Official: crudfifth.com">
 </picture>
 </a>
 <a href="https://www.wantedly.com/id/CRUD5th">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-wantedly-dark.svg?v=3feca0a61f09">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-wantedly-light.svg?v=e17927c6812d">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-wantedly-light.svg?v=e17927c6812d" width="390" alt="Wantedly: wantedly.com/id/CRUD5th">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-wantedly-dark.svg?v=90a0c7b0cc29">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-wantedly-light.svg?v=4c948d869af1">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-wantedly-light.svg?v=4c948d869af1" width="390" alt="Wantedly: wantedly.com/id/CRUD5th">
 </picture>
 </a>
 <a href="https://www.lancers.jp/profile/crudfifth">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-lancers-dark.svg?v=12b978820df3">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-lancers-light.svg?v=fa5d7e81b637">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-lancers-light.svg?v=fa5d7e81b637" width="390" alt="Lancers: lancers.jp/profile/crudfifth">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-lancers-dark.svg?v=4df021dbcf91">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-lancers-light.svg?v=a23206b0dc69">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-lancers-light.svg?v=a23206b0dc69" width="390" alt="Lancers: lancers.jp/profile/crudfifth">
 </picture>
 </a>
 <a href="https://crowdworks.jp/public/employees/5793463">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-crowdworks-dark.svg?v=bb3a0a7c7a9d">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-crowdworks-light.svg?v=af4cee5a9bd2">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-crowdworks-light.svg?v=af4cee5a9bd2" width="390" alt="Crowdworks: crowdworks.jp">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-crowdworks-dark.svg?v=cf360bdb0b43">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-crowdworks-light.svg?v=e1469e2fa1b4">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-crowdworks-light.svg?v=e1469e2fa1b4" width="390" alt="Crowdworks: crowdworks.jp">
 </picture>
 </a>
 <a href="https://codepen.io/CRUD5th">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-codepen-dark.svg?v=43874f624937">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-codepen-light.svg?v=b8f09a2b774e">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-codepen-light.svg?v=b8f09a2b774e" width="390" alt="CodePen: codepen.io/CRUD5th">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-codepen-dark.svg?v=4954adb695c6">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-codepen-light.svg?v=da7903e7db92">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-codepen-light.svg?v=da7903e7db92" width="390" alt="CodePen: codepen.io/CRUD5th">
 </picture>
 </a>
 <a href="https://www.instagram.com/crud5th_toto_/">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-instagram-dark.svg?v=50ce0f0f5e10">
-  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-instagram-light.svg?v=566ad258294c">
-  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-instagram-light.svg?v=566ad258294c" width="390" alt="Instagram: @crud5th_toto_">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-instagram-dark.svg?v=d50075431eac">
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-instagram-light.svg?v=2208278df549">
+  <img src="https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-link-instagram-light.svg?v=2208278df549" width="390" alt="Instagram: @crud5th_toto_">
 </picture>
 </a>
 <!-- PROFILE DETAILS END -->
