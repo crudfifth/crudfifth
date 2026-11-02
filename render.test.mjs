@@ -1,29 +1,32 @@
 import assert from 'node:assert/strict';
+import { createHash } from 'node:crypto';
 import { once } from 'node:events';
 import { execFile } from 'node:child_process';
-import { mkdtemp, mkdir, readFile, rm, symlink, writeFile } from 'node:fs/promises';
+import { mkdtemp, mkdir, readFile, readdir, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { collectProfile } from './collect.mjs';
 import { generateProfileAssets, renderProfileSvg } from './render.mjs';
 import { createPreviewServer } from './serve.mjs';
 
 const runFile = promisify(execFile);
 const profileRoot = path.dirname(fileURLToPath(import.meta.url));
 const profile = {
-  schemaVersion: 3, owner: 'crudfifth', generatedAt: '2026-11-02T00:00:00Z',
+  schemaVersion: 4, owner: 'crudfifth', generatedAt: '2026-11-02T00:00:00Z',
   sources: [{ login: 'crudfifth', type: 'User' }, { login: 'CRUD5thOfficial', type: 'Organization' }],
   profile: { name: 'Fixture Name', bio: 'Profile fixture', followers: 4, following: 5,
     publicRepos: 5, url: 'https://github.com/crudfifth' },
   repositories: { publicCount: 8, originalCount: 6, stars: 20, forks: 3 },
   languages: [{ name: 'TypeScript', bytes: 300 }, { name: 'Rust', bytes: 100 }],
   languageScope: { kind: 'github-language-bytes', visibility: 'public-and-private', totalBytes: 400 },
-  activity: { kind: 'public-events', label: '個人＋組織の公開イベント・取得分', complete: false,
-    since: '2026-10-29', until: '2026-10-30', eventCount: 3,
-    days: [{ date: '2026-10-29', count: 1 }, { date: '2026-10-30', count: 2 }] },
+  activity: { kind: 'github-contributions', subject: 'crudfifth', visibility: 'public-and-private',
+    label: 'コミット・PR等・公開＋非公開', complete: true,
+    since: '2025-11-03', until: '2026-11-02', totalCount: 3,
+    days: Array.from({ length: 365 }, (_, index) => ({
+      date: new Date(Date.UTC(2025, 10, 3) + index * 86_400_000).toISOString().slice(0, 10), count: index === 0 ? 1 : index === 364 ? 2 : 0,
+    })) },
   projects: [{ name: 'CRUD5thOfficial/organization-project', description: '', stars: 2,
     language: 'TypeScript', url: 'https://github.com/CRUD5thOfficial/organization-project' }],
 };
@@ -53,19 +56,20 @@ test('five sections animate and reduced motion preserves the final readable stat
 
 test('combined counts identify both subjects and keep the personal follower scope', () => {
   const svg = renderProfileSvg(profile);
-  assert.match(svg, /公開イベント・取得分/);
+  assert.match(svg, /GITHUB ACTIVITY/);
   assert.doesNotMatch(svg, /年間貢献数ではありません|SELF-HOSTED SVG/);
   assert.match(svg, /言語別コード量/);
   assert.match(svg, /75\.0%/);
   assert.match(svg, /25\.0%/);
   assert.match(svg, /crudfifth \+ CRUD5thOfficial/);
   assert.match(svg, /個人フォロワー/);
-  assert.match(svg, /個人＋組織の公開イベント・取得分/);
+  assert.match(svg, /コミット・PR等・公開＋非公開/);
   assert.match(svg, /個人＋組織・公開＋非公開・非fork/);
   assert.match(svg, /400 bytes/);
   assert.match(svg, />8<|>8<\/tspan>/);
   assert.match(svg, />20<|>20<\/tspan>/);
-  assert.match(svg, /3 events/);
+  assert.match(svg, /3 contributions/);
+  assert.doesNotMatch(svg, /PUBLIC ACTIVITY|公開イベント|events|commits/);
 });
 
 test('untrusted profile, language and project strings cannot introduce XML or CSS', () => {
@@ -82,21 +86,15 @@ test('untrusted profile, language and project strings cannot introduce XML or CS
   assert.doesNotMatch(svg, /<script\b|<image\b|<a\b|<[^>]+\son[a-z]+\s*=/i);
 });
 
-test('actual collector output with zero events and empty dates renders explicit empty state', async () => {
-  await withTempDir(async (rootDir) => {
-    const publicProfile = { login: 'crudfifth', type: 'User', name: 'Collector fixture', bio: null,
-      followers: 0, following: 0, public_repos: 0, html_url: 'https://github.com/crudfifth' };
-    const fetchImpl = async (url) => Response.json(new URL(url).pathname === '/users/crudfifth' ? publicProfile
-      : new URL(url).pathname === '/orgs/CRUD5thOfficial' ? { login: 'CRUD5thOfficial', type: 'Organization', public_repos: 0 } : []);
-    const empty = await collectProfile({ fetchImpl, outputPath: path.join(rootDir, 'empty-profile.json') });
-    assert.equal(empty.activity.since, '');
-    assert.equal(empty.activity.until, '');
-    const svg = renderProfileSvg(empty);
-    assert.match(svg, /取得できた公開イベントなし/);
-    assert.match(svg, /取得できた言語コード量なし/);
-    assert.match(svg, /0 bytes/);
-    assert.doesNotMatch(svg, /NaN|Infinity/);
-  });
+test('zero contributions retain a full dated calendar and a rendered baseline', () => {
+  const empty = structuredClone(profile);
+  empty.activity.totalCount = 0;
+  empty.activity.days.forEach((day) => { day.count = 0; });
+  const svg = renderProfileSvg(empty);
+  assert.match(svg, /0 contributions/);
+  assert.match(svg, /2025-11-03 — 2026-11-02/);
+  assert.equal((svg.match(/<circle class="point"/g) ?? []).length, 365);
+  assert.doesNotMatch(svg, /NaN|Infinity|取得できた公開イベントなし/);
 });
 
 test('invalid input is rejected before replacing existing assets', async () => {
@@ -131,7 +129,7 @@ test('file creation failure preserves existing destination and does not claim su
 test('inconsistent counts, unknown theme and invalid numeric values fail explicitly', () => {
   for (const mutation of [
     (input) => { input.repositories.stars = null; },
-    (input) => { input.activity.eventCount += 1; },
+    (input) => { input.activity.totalCount += 1; },
     (input) => { input.languageScope.totalBytes = 1; },
     (input) => { input.profile.followers = -1; },
     (input) => { input.profile.bio = {}; },
@@ -141,7 +139,7 @@ test('inconsistent counts, unknown theme and invalid numeric values fail explici
     (input) => { input.sources[1].type = 'User'; },
     (input) => { input.owner = 'other'; },
     (input) => { input.profile.publicRepos = 9; },
-    (input) => { input.activity.complete = true; },
+    (input) => { input.activity.complete = false; },
   ]) {
     const input = structuredClone(profile);
     mutation(input);
@@ -150,7 +148,7 @@ test('inconsistent counts, unknown theme and invalid numeric values fail explici
   assert.throws(() => renderProfileSvg(profile, { theme: 'other' }));
 });
 
-test('CLI generates both themed images from schema3 input at the documented entry point', async () => {
+test('CLI generates both themed images from schema4 input at the documented entry point', async () => {
   await withTempDir(async (outputDir) => {
     const inputPath = path.join(outputDir, 'profile.json');
     await writeFile(inputPath, JSON.stringify(profile));
@@ -219,4 +217,53 @@ test('every language is displayed in two columns with percentages and a content-
   const height = Number(svg.match(/height="(\d+)"/)[1]);
   assert.ok(height > 1500);
   assert.doesNotMatch(svg, /NaN|Infinity/);
+});
+
+
+test('365 day points fit the same graph and keep their animation delays within a cycle', () => {
+  const svg = renderProfileSvg(profile);
+  const points = [...svg.matchAll(/<circle class="point" cx="([\d.]+)" cy="([\d.]+)"[^>]+--delay:([\d.]+)s/g)];
+  assert.equal(points.length, 365);
+  assert.equal(Number(points[0][1]), 35);
+  assert.equal(Number(points.at(-1)[1]), 765);
+  assert.ok(points.every((point) => Number(point[2]) >= 389 && Number(point[2]) <= 458 && Number(point[3]) < 2));
+});
+
+test('incomplete dates and other-person/public-only scope fail before rendering', () => {
+  for (const mutate of [
+    (activity) => { activity.subject = 'someone-else'; },
+    (activity) => { activity.visibility = 'public'; },
+    (activity) => { activity.days.pop(); },
+    (activity) => { activity.days[1].date = activity.days[0].date; },
+    (activity) => { activity.since = '2025-11-02'; },
+    (activity) => { activity.until = '2026-11-01'; },
+  ]) { const input = structuredClone(profile); mutate(input.activity); assert.throws(() => renderProfileSvg(input)); }
+});
+
+test('render synchronizes the existing three raw image cache queries with final SVG digests', async () => {
+  await withTempDir(async (rootDir) => {
+    const readme = await readFile(path.join(profileRoot, 'README.md'), 'utf8');
+    await writeFile(path.join(rootDir, 'README.md'), readme);
+    const inputPath = path.join(rootDir, 'profile.json');
+    await writeFile(inputPath, JSON.stringify(profile));
+    await generateProfileAssets({ inputPath, outputDir: rootDir });
+    const updated = await readFile(path.join(rootDir, 'README.md'), 'utf8');
+    const urls = [...updated.matchAll(/https:\/\/raw\.githubusercontent\.com\/crudfifth\/crudfifth\/main\/assets\/profile-(dark|light)\.svg\?v=([a-f0-9]{12})/g)];
+    assert.equal(urls.length, 3);
+    for (const [, theme, digest] of urls) assert.equal(digest, createHash('sha256').update(await readFile(path.join(rootDir, `assets/profile-${theme}.svg`))).digest('hex').slice(0, 12));
+    assert.equal(updated.replace(/\?v=[a-f0-9]+/g, ''), readme.replace(/\?v=[a-f0-9]+/g, ''));
+    assert.deepEqual((await readdir(rootDir)).sort(), ['README.md', 'assets', 'profile.json']);
+  });
+});
+
+test('a README preparation failure preserves both previous assets', async () => {
+  await withTempDir(async (rootDir) => {
+    const inputPath = path.join(rootDir, 'profile.json');
+    await writeFile(inputPath, JSON.stringify(profile));
+    await mkdir(path.join(rootDir, 'README.md'));
+    await mkdir(path.join(rootDir, 'assets'));
+    for (const theme of ['dark', 'light']) await writeFile(path.join(rootDir, `assets/profile-${theme}.svg`), `previous-${theme}`);
+    await assert.rejects(generateProfileAssets({ inputPath, outputDir: rootDir }));
+    for (const theme of ['dark', 'light']) assert.equal(await readFile(path.join(rootDir, `assets/profile-${theme}.svg`), 'utf8'), `previous-${theme}`);
+  });
 });

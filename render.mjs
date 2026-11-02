@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto';
 import { mkdir, mkdtemp, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -23,7 +24,7 @@ function requireDate(value, label) {
 }
 
 export function validateProfile(profile) {
-  if (!profile || profile.schemaVersion !== 3) throw new TypeError('Unsupported profile schema');
+  if (!profile || profile.schemaVersion !== 4) throw new TypeError('Unsupported profile schema');
   requireText(profile.owner, 'owner');
   if (profile.owner !== 'crudfifth' || !Array.isArray(profile.sources) || profile.sources.length !== 2
     || profile.sources[0]?.login !== 'crudfifth' || profile.sources[0]?.type !== 'User'
@@ -50,26 +51,24 @@ export function validateProfile(profile) {
     || !['public', 'public-and-private'].includes(profile.languageScope.visibility)
     || totalBytes !== profile.languageScope.totalBytes) throw new TypeError('Invalid language byte scope or total');
   const activity = profile.activity;
-  if (!activity || activity.kind !== 'public-events' || activity.complete !== false) throw new TypeError('Invalid activity scope');
-  requireText(activity.label, 'activity.label');
-  requireCount(activity.eventCount, 'activity.eventCount');
-  if (!Array.isArray(activity.days) || activity.days.length > 370) throw new TypeError('Invalid activity days');
-  if (activity.days.length) {
-    requireDate(activity.since, 'activity.since');
-    requireDate(activity.until, 'activity.until');
-    let previousDate = '';
-    let eventCount = 0;
-    for (const day of activity.days) {
-      requireDate(day.date, 'activity day');
-      requireCount(day.count, 'activity count');
-      if (day.date <= previousDate || day.date < activity.since || day.date > activity.until) throw new TypeError('Activity days must be ordered within the stated range');
-      previousDate = day.date;
-      eventCount += day.count;
-    }
-    if (eventCount !== activity.eventCount) throw new TypeError('Activity counts do not add up');
-  } else if (activity.eventCount !== 0 || activity.since !== '' || activity.until !== '') {
-    throw new TypeError('Empty activity must have zero events and no date range');
+  if (!activity || activity.kind !== 'github-contributions' || activity.subject !== profile.owner
+    || activity.visibility !== 'public-and-private' || activity.complete !== true
+    || activity.label !== 'コミット・PR等・公開＋非公開') throw new TypeError('Invalid activity scope');
+  requireCount(activity.totalCount, 'activity.totalCount');
+  requireDate(activity.since, 'activity.since');
+  requireDate(activity.until, 'activity.until');
+  const end = new Date(profile.generatedAt);
+  const expectedStart = Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate() - 364);
+  if (activity.since !== new Date(expectedStart).toISOString().slice(0, 10)
+    || activity.until !== end.toISOString().slice(0, 10)
+    || !Array.isArray(activity.days) || activity.days.length !== 365) throw new TypeError('Invalid activity date range');
+  let totalCount = 0;
+  for (const [index, day] of activity.days.entries()) {
+    requireCount(day.count, 'activity count');
+    if (day.date !== new Date(expectedStart + index * 86_400_000).toISOString().slice(0, 10)) throw new TypeError('Activity days must cover every requested date exactly once in order');
+    totalCount += day.count;
   }
+  if (!Number.isSafeInteger(totalCount) || totalCount !== activity.totalCount) throw new TypeError('Activity counts do not add up');
   if (!Array.isArray(profile.projects) || profile.projects.length > 100) throw new TypeError('Invalid projects');
   for (const project of profile.projects) {
     for (const name of ['name', 'description', 'url', 'language']) requireText(project[name], `project.${name}`);
@@ -185,19 +184,17 @@ function renderActivity(profile) {
   const maxCount = Math.max(1, ...activity.days.map((day) => day.count));
   const points = activity.days.map((day, index) => ({
     x: 35 + index * graphWidth / Math.max(1, activity.days.length - 1),
-    y: baseline - day.count / maxCount * (baseline - graphTop), count: day.count,
+    y: baseline - day.count / maxCount * (baseline - graphTop), date: day.date, count: day.count,
   }));
   const pathData = points.map((point, index) => `${index ? 'L' : 'M'}${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ');
-  const chart = activity.eventCount > 0
-    ? `<path class="activity-line" pathLength="1" d="${pathData}"/>
-${points.filter((point) => point.count > 0).map((point, index) => `<circle class="point" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="3" style="--delay:${index * 0.1}s"/>`).join('')}`
-    : textNode(35, 421, '取得できた公開イベントなし', 'muted');
-  const range = activity.days.length ? `${activity.since} — ${activity.until}` : '取得期間なし';
-  return `<g data-section="activity">${sectionLabel('02', 'PUBLIC ACTIVITY', 372, `${activity.eventCount} events`)}
+  const chart = `<path class="activity-line" pathLength="1" d="${pathData}"/>
+${points.map((point, index) => `<circle class="point" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="1.8" style="--delay:${((index % 30) * 0.02).toFixed(2)}s"><title>${point.date}: ${point.count} contributions</title></circle>`).join('')}`;
+  const range = `${activity.since} — ${activity.until}`;
+  return `<g data-section="activity">${sectionLabel('02', 'GITHUB ACTIVITY', 372, `${numberFormat.format(activity.totalCount)} contributions`)}
 <path d="M35 458 H765" class="rule"/>
 ${chart}
 ${textNode(35, 481, range, 'mono muted', 'font-size="11"')}
-${textNode(765, 481, '個人＋組織の公開イベント・取得分', 'muted', 'text-anchor="end" font-size="11"')}
+${textNode(765, 481, activity.label, 'muted', 'text-anchor="end" font-size="11"')}
 </g>`;
 }
 
@@ -241,7 +238,7 @@ export function renderProfileSvg(input, { theme = 'dark' } = {}) {
   const languageRows = Math.max(1, Math.ceil(profile.languages.length / 2));
   const stackY = languageY + 82 + languageRows * 35;
   const height = stackY + 102;
-  const description = `${profile.profile.bio}. ${profile.projects.map((project) => `${project.name}: ${project.description}`).join('; ')}. crudfifth + CRUD5thOfficial。repo統計と活動は公開データ。言語は個人＋組織の${profile.languageScope.visibility === 'public-and-private' ? '公開＋非公開' : '公開'}・非fork repoのdefault branchをGitHubが判定したコードbytes割合。活動は個人＋組織の公開イベント取得分。フォロワーは個人の値。`;
+  const description = `${profile.profile.bio}. ${profile.projects.map((project) => `${project.name}: ${project.description}`).join('; ')}. crudfifth + CRUD5thOfficial。repo統計は公開データ。言語は個人＋組織の${profile.languageScope.visibility === 'public-and-private' ? '公開＋非公開' : '公開'}・非fork repoのdefault branchをGitHubが判定したコードbytes割合。活動はcrudfifth本人の公開＋非公開のコミット・PR等をGitHubが日別集計した直近365日のcontributions。フォロワーは個人の値。`;
   return `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="${height}" viewBox="0 0 800 ${height}" role="img" aria-labelledby="profile-title profile-description">
 <title id="profile-title">${xmlEscape(`CRUD5th — ${profile.profile.name}`)}</title>
 <desc id="profile-description">${xmlEscape(description)}</desc>
@@ -256,24 +253,46 @@ ${textNode(765, height - 16, `UPDATED ${new Date(profile.generatedAt).toISOStrin
 export async function generateProfileAssets({ inputPath = path.join(profileRoot, 'data/profile.json'), outputDir = profileRoot } = {}) {
   const profile = JSON.parse(await readFile(inputPath, 'utf8'));
   const images = ['dark', 'light'].map((theme) => ({ name: `profile-${theme}.svg`, svg: renderProfileSvg(profile, { theme }) }));
+  const readmePath = path.join(outputDir, 'README.md');
+  let updatedReadme;
+  try {
+    const readme = await readFile(readmePath, 'utf8');
+    const imageUrl = /https:\/\/raw\.githubusercontent\.com\/crudfifth\/crudfifth\/main\/assets\/profile-(dark|light)\.svg(?:\?v=[^"\s<>]+)?/g;
+    updatedReadme = readme.replace(imageUrl, (_url, theme) => {
+      const svg = images.find((image) => image.name === `profile-${theme}.svg`).svg;
+      const digest = createHash('sha256').update(svg).digest('hex').slice(0, 12);
+      return `https://raw.githubusercontent.com/crudfifth/crudfifth/main/assets/profile-${theme}.svg?v=${digest}`;
+    });
+    if (updatedReadme === readme) updatedReadme = undefined;
+  } catch (error) { if (error.code !== 'ENOENT') throw error; }
   await mkdir(outputDir, { recursive: true });
   const stagingDir = await mkdtemp(path.join(outputDir, '.profile-assets-'));
   const assetsDir = path.join(outputDir, 'assets');
   const backupDir = `${stagingDir}.previous`;
+  const stagedReadme = `${stagingDir}.readme`;
   let hasBackup = false;
   try {
     for (const image of images) await writeFile(path.join(stagingDir, image.name), image.svg, { flag: 'wx' });
+    if (updatedReadme !== undefined) await writeFile(stagedReadme, updatedReadme, { flag: 'wx' });
     try {
       if (!(await stat(assetsDir)).isDirectory()) throw new Error('assets destination must be a directory');
       await rename(assetsDir, backupDir);
       hasBackup = true;
     } catch (error) { if (error.code !== 'ENOENT') throw error; }
-    try { await rename(stagingDir, assetsDir); }
-    catch (error) {
+    let assetsReplaced = false;
+    try {
+      await rename(stagingDir, assetsDir);
+      assetsReplaced = true;
+      if (updatedReadme !== undefined) await rename(stagedReadme, readmePath);
+    } catch (error) {
+      if (assetsReplaced) await rm(assetsDir, { recursive: true, force: true });
       if (hasBackup) await rename(backupDir, assetsDir);
       throw error;
     }
-  } finally { await rm(stagingDir, { recursive: true, force: true }); }
+  } finally {
+    await rm(stagingDir, { recursive: true, force: true });
+    await rm(stagedReadme, { force: true });
+  }
   if (hasBackup) await rm(backupDir, { recursive: true, force: true });
   return images.map((image) => path.join(assetsDir, image.name));
 }

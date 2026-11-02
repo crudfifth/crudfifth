@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises';
+import { mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -24,29 +24,32 @@ function isTimestamp(value) {
   return typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(value) && Number.isFinite(Date.parse(value));
 }
 
-async function fetchJson(path, fetchImpl, timeoutMs, token = '', requestLabel = path) {
+async function fetchJson(path, fetchImpl, timeoutMs, token = '', requestLabel = path, queryRequest) {
+  const method = queryRequest ? 'POST' : 'GET';
   let response;
   try {
     response = await fetchImpl(`${apiOrigin}${path}`, {
-      method: 'GET',
+      method,
       headers: {
         Accept: 'application/vnd.github+json',
         'X-GitHub-Api-Version': '2022-11-28',
         'User-Agent': 'crudfifth-profile-collector',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(queryRequest ? { 'Content-Type': 'application/json' } : {}),
       },
+      ...(queryRequest ? { body: JSON.stringify(queryRequest) } : {}),
       redirect: 'error',
       signal: AbortSignal.timeout(timeoutMs),
     });
   } catch (error) {
     const reason = error?.name === 'TimeoutError' || error?.name === 'AbortError' ? 'timeout' : 'network failure';
-    throw new Error(`GitHub GET ${requestLabel}: ${reason}`);
+    throw new Error(`GitHub ${method} ${requestLabel}: ${reason}`);
   }
-  if (!response.ok) throw new Error(`GitHub GET ${requestLabel}: HTTP ${response.status}`);
+  if (!response.ok) throw new Error(`GitHub ${method} ${requestLabel}: HTTP ${response.status}`);
   try {
     return { body: await response.json(), link: response.headers.get('link') ?? '' };
   } catch {
-    throw new Error(`GitHub GET ${requestLabel}: invalid JSON response`);
+    throw new Error(`GitHub ${method} ${requestLabel}: invalid JSON response`);
   }
 }
 
@@ -74,27 +77,11 @@ function validateRepository(repository, source) {
   requireCondition(isTimestamp(repository.updated_at), 'repository update timestamp');
 }
 
-function buildProfile(profile, repositories, events, languages, visibility, generatedAt) {
+function buildProfile(profile, repositories, activity, languages, generatedAt) {
   const originals = repositories.filter((repository) => !repository.fork);
 
-  const dayCounts = new Map();
-  for (const event of events) {
-    const date = new Date(event.created_at).toISOString().slice(0, 10);
-    dayCounts.set(date, (dayCounts.get(date) ?? 0) + 1);
-  }
-  const dates = [...dayCounts.keys()].sort();
-  const since = dates[0] ?? '';
-  const until = dates.at(-1) ?? '';
-  const days = [];
-  if (since) {
-    for (const date = new Date(`${since}T00:00:00Z`); date.toISOString().slice(0, 10) <= until; date.setUTCDate(date.getUTCDate() + 1)) {
-      const day = date.toISOString().slice(0, 10);
-      days.push({ date: day, count: dayCounts.get(day) ?? 0 });
-    }
-  }
-
   return {
-    schemaVersion: 3,
+    schemaVersion: 4,
     owner,
     sources: sources.map((source) => ({ ...source })),
     generatedAt,
@@ -113,16 +100,8 @@ function buildProfile(profile, repositories, events, languages, visibility, gene
       forks: originals.reduce((sum, repository) => sum + repository.forks_count, 0),
     },
     languages,
-    languageScope: { kind: 'github-language-bytes', visibility, totalBytes: languages.reduce((sum, language) => sum + language.bytes, 0) },
-    activity: {
-      kind: 'public-events',
-      label: events.length ? '個人＋組織の公開イベント・取得分' : '取得できた公開イベントなし',
-      since,
-      until,
-      complete: false,
-      eventCount: events.length,
-      days,
-    },
+    languageScope: { kind: 'github-language-bytes', visibility: 'public-and-private', totalBytes: languages.reduce((sum, language) => sum + language.bytes, 0) },
+    activity,
     projects: originals.toSorted((left, right) => Date.parse(right.updated_at) - Date.parse(left.updated_at) || `${left.owner.login}/${left.name}`.localeCompare(`${right.owner.login}/${right.name}`, 'en'))
       .slice(0, 3).map((repository) => ({
         name: `${repository.owner.login}/${repository.name}`,
@@ -215,56 +194,71 @@ async function collectLanguageBytes(repositories, fetchImpl, timeoutMs, token) {
     .sort((left, right) => right.bytes - left.bytes || left.name.localeCompare(right.name, 'en'));
 }
 
-async function preventScopeDowngrade(outputPath, token) {
-  if (token) return;
-  let previous;
-  try { previous = await readFile(outputPath, 'utf8'); }
-  catch (error) { if (error.code === 'ENOENT' || error.code === 'EISDIR') return; throw error; }
-  let profile;
-  try { profile = JSON.parse(previous); } catch { return; }
-  if (profile?.languageScope?.visibility === 'public-and-private') {
-    throw new Error('GITHUB_TOKEN credentials are required to refresh the existing public-and-private language snapshot');
+async function collectContributions(fetchImpl, timeoutMs, token, generatedAt) {
+  const end = new Date(generatedAt);
+  const start = new Date(Date.UTC(end.getUTCFullYear(), end.getUTCMonth(), end.getUTCDate() - 364));
+  const since = start.toISOString().slice(0, 10);
+  const until = end.toISOString().slice(0, 10);
+  const { body } = await fetchJson('/graphql', fetchImpl, timeoutMs, token, 'personal contribution calendar', {
+    query: `query ProfileContributions($login: String!, $from: DateTime!, $to: DateTime!) {
+      user(login: $login) {
+        login
+        contributionsCollection(from: $from, to: $to) {
+          contributionCalendar { totalContributions weeks { contributionDays { date contributionCount } } }
+        }
+      }
+    }`,
+    variables: { login: owner, from: start.toISOString(), to: generatedAt },
+  });
+  requireCondition(body && !Object.hasOwn(body, 'errors'), 'contribution calendar query failed');
+  requireCondition(body.data?.user?.login?.toLowerCase() === owner, 'contribution calendar subject');
+  const calendar = body.data.user.contributionsCollection?.contributionCalendar;
+  requireCondition(isCount(calendar?.totalContributions) && Array.isArray(calendar.weeks), 'contribution calendar');
+  const days = [];
+  let totalCount = 0;
+  for (const week of calendar.weeks) {
+    requireCondition(Array.isArray(week?.contributionDays), 'contribution calendar week');
+    for (const day of week.contributionDays) {
+      const expectedDate = new Date(start.getTime() + days.length * 86_400_000).toISOString().slice(0, 10);
+      requireCondition(days.length < 365 && day?.date === expectedDate, 'contribution calendar must contain every requested date exactly once in order');
+      requireCondition(isCount(day.contributionCount), 'contribution calendar count');
+      totalCount += day.contributionCount;
+      requireCondition(Number.isSafeInteger(totalCount), 'contribution calendar total');
+      // Only dates and counts cross into the public snapshot, including anonymous private contributions.
+      days.push({ date: day.date, count: day.contributionCount });
+    }
   }
+  requireCondition(days.length === 365 && totalCount === calendar.totalContributions, 'contribution calendar completeness or total');
+  return { kind: 'github-contributions', subject: owner, visibility: 'public-and-private',
+    label: 'コミット・PR等・公開＋非公開', since, until, complete: true, totalCount, days };
 }
 
 export async function collectProfile({ fetchImpl = fetch, outputPath = defaultOutputPath, timeoutMs = 15_000, now = () => new Date(), token = process.env.GITHUB_TOKEN ?? '' } = {}) {
   requireCondition(typeof token === 'string' && !/[\r\n]/.test(token), 'authentication token');
-  await preventScopeDowngrade(outputPath, token);
-  if (token) {
-    const { body: identity } = await fetchJson('/user', fetchImpl, timeoutMs, token, 'authenticated user');
-    requireCondition(identity?.login?.toLowerCase() === owner, 'authenticated account must match profile owner');
-  }
+  if (!token.trim()) throw new Error('GITHUB_TOKEN credentials are required to collect public-and-private personal contributions');
+  const generatedAt = now().toISOString();
+  const { body: identity } = await fetchJson('/user', fetchImpl, timeoutMs, token, 'authenticated user');
+  requireCondition(identity?.login?.toLowerCase() === owner, 'authenticated account must match profile owner');
   const { body: profile } = await fetchJson(`/users/${owner}`, fetchImpl, timeoutMs, token);
   validateProfile(profile);
   const repositoriesById = new Map();
-  const eventsById = new Map();
   for (const source of sources) {
     const metadata = source.type === 'User' ? profile : (await fetchJson(`/orgs/${source.login}`, fetchImpl, timeoutMs, token)).body;
     validateSource(metadata, source);
     for (const repository of await collectRepositories(source, metadata.public_repos, fetchImpl, timeoutMs, token)) {
       repositoriesById.set(repository.id, repository);
     }
-    const eventsPath = source.type === 'User' ? `/users/${source.login}/events/public` : `/orgs/${source.login}/events`;
-    const { body: events } = await fetchJson(`${eventsPath}?per_page=100&page=1`, fetchImpl, timeoutMs, token);
-    requireCondition(Array.isArray(events) && events.length <= 100, 'public events page');
-    for (const event of events) {
-      requireCondition(typeof event?.id === 'string' && event.id.length > 0, 'public event ID');
-      requireCondition(event.public === true && isTimestamp(event.created_at), 'public event timestamp');
-      eventsById.set(event.id, event);
-    }
   }
-  const languageRepositoriesById = new Map(repositoriesById);
-  if (token) {
-    languageRepositoriesById.clear();
-    for (const source of sources) {
-      for (const repository of await collectOwnedRepositories(source, fetchImpl, timeoutMs, token)) {
-        requireCondition(!languageRepositoriesById.has(repository.id), 'duplicate owned repository across sources');
-        languageRepositoriesById.set(repository.id, repository);
-      }
+  const activity = await collectContributions(fetchImpl, timeoutMs, token, generatedAt);
+  const languageRepositoriesById = new Map();
+  for (const source of sources) {
+    for (const repository of await collectOwnedRepositories(source, fetchImpl, timeoutMs, token)) {
+      requireCondition(!languageRepositoriesById.has(repository.id), 'duplicate owned repository across sources');
+      languageRepositoriesById.set(repository.id, repository);
     }
   }
   const languages = await collectLanguageBytes([...languageRepositoriesById.values()], fetchImpl, timeoutMs, token);
-  const collectedProfile = buildProfile(profile, [...repositoriesById.values()], [...eventsById.values()], languages, token ? 'public-and-private' : 'public', now().toISOString());
+  const collectedProfile = buildProfile(profile, [...repositoriesById.values()], activity, languages, generatedAt);
   await writeProfileAtomically(outputPath, collectedProfile);
   return collectedProfile;
 }
@@ -272,7 +266,7 @@ export async function collectProfile({ fetchImpl = fetch, outputPath = defaultOu
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const profile = await collectProfile();
-    console.log(JSON.stringify({ saved: true, generatedAt: profile.generatedAt, publicRepositories: profile.repositories.publicCount, originalRepositories: profile.repositories.originalCount, publicEvents: profile.activity.eventCount, languageVisibility: profile.languageScope.visibility, languageBytes: profile.languageScope.totalBytes }));
+    console.log(JSON.stringify({ saved: true, generatedAt: profile.generatedAt, publicRepositories: profile.repositories.publicCount, originalRepositories: profile.repositories.originalCount, personalContributions: profile.activity.totalCount, languageVisibility: profile.languageScope.visibility, languageBytes: profile.languageScope.totalBytes }));
   } catch (error) {
     console.error(`Collection failed; the existing profile was not replaced. ${error.message}`);
     process.exitCode = 1;

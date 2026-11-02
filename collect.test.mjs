@@ -6,340 +6,237 @@ import test from 'node:test';
 import { collectProfile } from './collect.mjs';
 import { generateProfileAssets, renderProfileSvg } from './render.mjs';
 
+const fixtureToken = 'fixture-only-token-never-real';
+const fixedNow = '2026-11-02T00:00:00.000Z';
+const collect = (options) => collectProfile({ token: fixtureToken, now: () => new Date(fixedNow), ...options });
 function repository(id, overrides = {}) {
-  return {
-    id, owner: { login: 'crudfifth' }, private: false, fork: false,
+  return { id, owner: { login: 'crudfifth' }, private: false, fork: false,
     name: `repository-${id}`, html_url: `https://github.com/crudfifth/repository-${id}`,
     description: null, language: 'TypeScript', stargazers_count: 1, forks_count: 2,
-    updated_at: '2026-10-01T00:00:00Z', ...overrides,
-  };
+    updated_at: '2026-10-01T00:00:00Z', ...overrides };
 }
-
 function organizationRepository(id, overrides = {}) {
   return repository(id, { owner: { login: 'CRUD5thOfficial' },
     html_url: `https://github.com/CRUD5thOfficial/repository-${id}`, ...overrides });
 }
-
-function profile(publicRepos) {
+function profile(count = 0) {
   return { login: 'crudfifth', type: 'User', name: 'Fixture Name', bio: null,
-    followers: 4, following: 5, public_repos: publicRepos, html_url: 'https://github.com/crudfifth' };
+    followers: 4, following: 5, public_repos: count, html_url: 'https://github.com/crudfifth' };
 }
-
-function organization(publicRepos) {
-  return { login: 'CRUD5thOfficial', type: 'Organization', public_repos: publicRepos };
+function organization(count = 0) { return { login: 'CRUD5thOfficial', type: 'Organization', public_repos: count }; }
+function calendarBody({ from = '2025-11-03T00:00:00.000Z', zero = false } = {}) {
+  const days = Array.from({ length: 365 }, (_, index) => ({
+    date: new Date(Date.parse(from) + index * 86_400_000).toISOString().slice(0, 10),
+    contributionCount: zero ? 0 : index === 0 ? 1 : index === 364 ? 2 : 0,
+  }));
+  return { data: { user: { login: 'crudfifth', contributionsCollection: { contributionCalendar: {
+    totalContributions: zero ? 0 : 3,
+    weeks: Array.from({ length: Math.ceil(days.length / 7) }, (_, index) => ({ contributionDays: days.slice(index * 7, index * 7 + 7) })),
+  } } } } };
 }
-
-async function temporaryOutput(t) {
-  const directory = await mkdtemp(join(tmpdir(), 'github-profile-test-'));
+function calendar(body) { return body.data.user.contributionsCollection.contributionCalendar; }
+function fixture({ personal = [], organizational = [], graph = () => Response.json(calendarBody()), override } = {}) {
+  return async (url, options) => {
+    const parsed = new URL(url);
+    assert.equal(parsed.origin, 'https://api.github.com');
+    assert.equal(options.headers.Authorization, `Bearer ${fixtureToken}`);
+    assert.equal(options.redirect, 'error');
+    assert.ok(options.signal instanceof AbortSignal);
+    assert.ok(!parsed.pathname.includes('/events'), 'events must not be fetched or mixed into personal contributions');
+    if (override) { const response = await override(parsed, options); if (response) return response; }
+    if (parsed.pathname === '/graphql') {
+      assert.equal(options.method, 'POST');
+      const request = JSON.parse(options.body);
+      assert.match(request.query, /^query\b/);
+      assert.doesNotMatch(request.query, /mutation|repository|commitContributionsByRepository/);
+      assert.equal(request.variables.login, 'crudfifth');
+      return graph(request, options);
+    }
+    assert.equal(options.method, 'GET');
+    if (parsed.pathname === '/user') return Response.json({ login: 'crudfifth' });
+    if (parsed.pathname === '/users/crudfifth') return Response.json(profile());
+    if (parsed.pathname === '/orgs/CRUD5thOfficial') return Response.json(organization());
+    if (parsed.pathname === '/user/repos') return Response.json(personal);
+    if (parsed.pathname === '/orgs/CRUD5thOfficial/repos' && parsed.searchParams.get('type') === 'all') return Response.json(organizational);
+    if (parsed.pathname.endsWith('/languages')) return Response.json({ Elixir: 300, HTML: 100 });
+    return Response.json([]);
+  };
+}
+async function output(t) {
+  const directory = await mkdtemp(join(tmpdir(), 'github-activity-test-'));
   t.after(() => rm(directory, { recursive: true, force: true }));
   return join(directory, 'profile.json');
 }
 
-function emptySourceResponse(url) {
-  const pathname = new URL(url).pathname;
-  return Response.json(pathname === '/users/crudfifth' ? profile(0)
-    : pathname === '/orgs/CRUD5thOfficial' ? organization(0) : []);
-}
-
-test('HTTP failure rejects and preserves the previous profile byte for byte', async (t) => {
-  const outputPath = await temporaryOutput(t);
-  const previous = '{"owner":"previous-valid-profile"}\n';
-  await writeFile(outputPath, previous);
-  const fetchImpl = async () => new Response('Do not log this API response', { status: 503 });
-  await assert.rejects(collectProfile({ fetchImpl, outputPath }), /HTTP 503/);
-  assert.equal(await readFile(outputPath, 'utf8'), previous);
-  assert.deepEqual(await readdir(join(outputPath, '..')), ['profile.json']);
-});
-
-test('both sources page repositories and union IDs while retaining personal profile counts', async (t) => {
-  const outputPath = await temporaryOutput(t);
-  const repositories = Array.from({ length: 101 }, (_, index) => repository(index + 1));
-  repositories[0] = repository(1, { fork: true, stargazers_count: 900, forks_count: 900 });
-  repositories[1] = repository(2, { language: null });
-  repositories[2] = repository(3, { updated_at: '2026-10-31T00:00:00Z' });
-  const organizationRepositories = [
-    organizationRepository(2, { language: 'Rust', stargazers_count: 5, forks_count: 7, updated_at: '2026-11-01T00:00:00Z' }),
-    organizationRepository(201, { stargazers_count: 3, forks_count: 4, updated_at: '2026-11-02T00:00:00Z' }),
-  ];
-  const paths = [];
-  const fetchImpl = async (url, options) => {
-    assert.equal(options.method, 'GET');
-    assert.equal(options.headers.Authorization, undefined);
-    assert.equal(options.redirect, 'error');
-    assert.ok(options.signal instanceof AbortSignal);
-    const parsed = new URL(url);
-    assert.equal(parsed.origin, 'https://api.github.com');
-    paths.push(`${parsed.pathname}${parsed.search}`);
-    if (parsed.pathname === '/users/crudfifth') return Response.json(profile(101));
-    if (parsed.pathname === '/orgs/CRUD5thOfficial') return Response.json(organization(2));
-    if (parsed.pathname.endsWith('/repos')) {
-      assert.equal(parsed.searchParams.get('per_page'), '100');
-      assert.equal(parsed.searchParams.get('sort'), 'full_name');
-      assert.equal(parsed.searchParams.get('direction'), 'asc');
-      if (parsed.pathname.startsWith('/orgs/')) {
-        assert.equal(parsed.searchParams.get('type'), 'public');
-        return Response.json(organizationRepositories);
-      }
-      assert.equal(parsed.searchParams.get('type'), 'owner');
-      const firstPage = parsed.searchParams.get('page') === '1';
-      return Response.json(firstPage ? repositories.slice(0, 100) : repositories.slice(100), {
-        headers: firstPage ? { link: '<https://untrusted.invalid/never-fetch>; rel="next"' } : {},
-      });
-    }
-    if (parsed.pathname.endsWith('/languages')) return Response.json(parsed.pathname.includes('/CRUD5thOfficial/repository-2/') ? { Rust: 20 } : { TypeScript: 100 });
-    assert.equal(parsed.searchParams.get('page'), '1');
-    assert.equal(parsed.searchParams.get('per_page'), '100');
-    if (parsed.pathname === '/users/crudfifth/events/public') return Response.json([
-      { id: 'latest', public: true, created_at: '2026-10-31T02:00:00Z' },
-      { id: 'older', public: true, created_at: '2026-10-29T23:00:00Z' },
-      { id: 'same-day', public: true, created_at: '2026-10-31T03:00:00Z' },
-    ], { headers: { link: '<https://untrusted.invalid/never-fetch>; rel="next"' } });
-    assert.equal(parsed.pathname, '/orgs/CRUD5thOfficial/events');
-    return Response.json([
-      { id: 'latest', public: true, created_at: '2026-10-31T02:00:00Z' },
-      { id: 'organization-only', public: true, created_at: '2026-11-01T03:00:00Z' },
-    ]);
-  };
-
-  const collected = await collectProfile({ fetchImpl, outputPath, now: () => new Date('2026-11-02T00:00:00Z') });
-  assert.equal(collected.schemaVersion, 3);
-  assert.equal(collected.owner, 'crudfifth');
-  assert.deepEqual(collected.sources, [{ login: 'crudfifth', type: 'User' }, { login: 'CRUD5thOfficial', type: 'Organization' }]);
-  assert.deepEqual(collected.profile, { name: 'Fixture Name', bio: '', followers: 4, following: 5, publicRepos: 101, url: 'https://github.com/crudfifth' });
-  assert.deepEqual(collected.repositories, { publicCount: 102, originalCount: 101, stars: 107, forks: 209 });
-  assert.deepEqual(collected.languages, [{ name: 'TypeScript', bytes: 10000 }, { name: 'Rust', bytes: 20 }]);
-  assert.deepEqual(collected.languageScope, { kind: 'github-language-bytes', visibility: 'public', totalBytes: 10020 });
-  assert.deepEqual(collected.projects.map(({ name, url, description }) => ({ name, url, description })), [
-    { name: 'CRUD5thOfficial/repository-201', url: 'https://github.com/CRUD5thOfficial/repository-201', description: '' },
-    { name: 'CRUD5thOfficial/repository-2', url: 'https://github.com/CRUD5thOfficial/repository-2', description: '' },
-    { name: 'crudfifth/repository-3', url: 'https://github.com/crudfifth/repository-3', description: '' },
-  ]);
-  assert.equal(collected.activity.complete, false);
-  assert.equal(collected.activity.eventCount, 4);
-  assert.deepEqual(collected.activity.days, [
-    { date: '2026-10-29', count: 1 }, { date: '2026-10-30', count: 0 },
-    { date: '2026-10-31', count: 2 }, { date: '2026-11-01', count: 1 },
-  ]);
-  assert.equal(paths.filter((requestPath) => requestPath.includes('/events')).length, 2);
-  assert.deepEqual(JSON.parse(await readFile(outputPath, 'utf8')), collected);
-  assert.deepEqual(await readdir(join(outputPath, '..')), ['profile.json']);
-  assert.match(renderProfileSvg(collected), /crudfifth \+ CRUD5thOfficial/);
-});
-
-test('an incomplete personal repository collection rejects and preserves the previous profile', async (t) => {
-  const outputPath = await temporaryOutput(t);
-  await writeFile(outputPath, 'previous-profile\n');
-  const fetchImpl = async (url) => new URL(url).pathname === '/users/crudfifth' ? Response.json(profile(1)) : emptySourceResponse(url);
-  await assert.rejects(collectProfile({ fetchImpl, outputPath }), /repository page count does not match/);
-  assert.equal(await readFile(outputPath, 'utf8'), 'previous-profile\n');
-});
-
-test('a failed later personal repository page preserves the previous profile', async (t) => {
-  const outputPath = await temporaryOutput(t);
-  await writeFile(outputPath, 'previous-profile\n');
-  const fetchImpl = async (url) => {
-    const parsed = new URL(url);
-    if (parsed.pathname === '/users/crudfifth') return Response.json(profile(101));
-    if (parsed.pathname !== '/users/crudfifth/repos') return emptySourceResponse(url);
-    return parsed.searchParams.get('page') === '1'
-      ? Response.json(Array.from({ length: 100 }, (_, index) => repository(index + 1)))
-      : new Response(null, { status: 502 });
-  };
-  await assert.rejects(collectProfile({ fetchImpl, outputPath }), /HTTP 502/);
-  assert.equal(await readFile(outputPath, 'utf8'), 'previous-profile\n');
-});
-
-test('timeout rejects and preserves the previous profile', async (t) => {
-  const outputPath = await temporaryOutput(t);
-  await writeFile(outputPath, 'previous-profile\n');
-  const fetchImpl = async (_url, { signal }) => new Promise((resolve, reject) => {
-    const timer = setTimeout(() => resolve(Response.json(profile(0))), 1_000);
-    signal.addEventListener('abort', () => { clearTimeout(timer); reject(signal.reason); }, { once: true });
-  });
-  await assert.rejects(collectProfile({ fetchImpl, outputPath, timeoutMs: 5 }), /timeout/);
-  assert.equal(await readFile(outputPath, 'utf8'), 'previous-profile\n');
-});
-
-test('organization failures preserve the previous JSON and both SVGs throughout the pipeline', async (t) => {
-  const failureCases = [
-    { name: 'metadata HTTP', target: '/orgs/CRUD5thOfficial', response: () => new Response(null, { status: 503 }), error: /HTTP 503/ },
-    { name: 'metadata JSON', target: '/orgs/CRUD5thOfficial', response: () => new Response('{bad json'), error: /invalid JSON/ },
-    { name: 'metadata identity', target: '/orgs/CRUD5thOfficial', response: () => Response.json({ ...organization(1), type: 'User' }), error: /source type/ },
-    { name: 'later repository page HTTP', target: '/orgs/CRUD5thOfficial/repos', laterPage: true, response: () => new Response(null, { status: 502 }), error: /HTTP 502/ },
-    { name: 'private repository', target: '/orgs/CRUD5thOfficial/repos', response: () => Response.json([organizationRepository(201, { private: true })]), error: /public repository owner/ },
-    { name: 'missing private flag', target: '/orgs/CRUD5thOfficial/repos', response: () => Response.json([organizationRepository(201, { private: undefined })]), error: /public repository owner/ },
-    { name: 'wrong repository owner', target: '/orgs/CRUD5thOfficial/repos', response: () => Response.json([repository(201)]), error: /public repository owner/ },
-    { name: 'repository count mismatch', target: '/orgs/CRUD5thOfficial/repos', response: () => Response.json([]), error: /repository page count does not match/ },
-    { name: 'duplicate repository in source', target: '/orgs/CRUD5thOfficial/repos', response: () => Response.json([organizationRepository(201), organizationRepository(201)]), error: /duplicate repository/ },
-    { name: 'events HTTP', target: '/orgs/CRUD5thOfficial/events', response: () => new Response(null, { status: 502 }), error: /HTTP 502/ },
-    { name: 'events timeout', target: '/orgs/CRUD5thOfficial/events', response: async (_url, { signal }) => new Promise((resolve, reject) => {
-      const timer = setTimeout(() => resolve(Response.json([])), 1_000);
-      signal.addEventListener('abort', () => { clearTimeout(timer); reject(signal.reason); }, { once: true });
-    }), error: /timeout/ },
-    { name: 'nonpublic event', target: '/orgs/CRUD5thOfficial/events', response: () => Response.json([{ id: 'organization-only', public: false, created_at: '2026-11-01T00:00:00Z' }]), error: /public event timestamp/ },
-    { name: 'missing event ID', target: '/orgs/CRUD5thOfficial/events', response: () => Response.json([{ public: true, created_at: '2026-11-01T00:00:00Z' }]), error: /public event ID/ },
-  ];
-  for (const failureCase of failureCases) await t.test(failureCase.name, async (subtest) => {
-    const outputPath = await temporaryOutput(subtest);
-    const outputDir = join(outputPath, '..');
-    await writeFile(outputPath, 'previous-profile\n');
-    await mkdir(join(outputDir, 'assets'));
-    for (const theme of ['dark', 'light']) await writeFile(join(outputDir, `assets/profile-${theme}.svg`), `previous-${theme}\n`);
-    const fetchImpl = async (url, options) => {
-      const parsed = new URL(url);
-      if (parsed.pathname === '/orgs/CRUD5thOfficial' && failureCase.target !== parsed.pathname) return Response.json(organization(failureCase.laterPage ? 101 : 1));
-      if (parsed.pathname === failureCase.target) {
-        if (failureCase.laterPage && parsed.searchParams.get('page') === '1') return Response.json(Array.from({ length: 100 }, (_, index) => organizationRepository(index + 1)));
-        return failureCase.response(url, options);
-      }
-      if (parsed.pathname === '/orgs/CRUD5thOfficial/repos') return Response.json([organizationRepository(201)]);
-      return emptySourceResponse(url);
-    };
-    await assert.rejects(async () => {
-      await collectProfile({ fetchImpl, outputPath, timeoutMs: 5 });
-      await generateProfileAssets({ inputPath: outputPath, outputDir });
-    }, failureCase.error);
-    assert.equal(await readFile(outputPath, 'utf8'), 'previous-profile\n');
-    for (const theme of ['dark', 'light']) assert.equal(await readFile(join(outputDir, `assets/profile-${theme}.svg`), 'utf8'), `previous-${theme}\n`);
-    assert.deepEqual((await readdir(outputDir)).sort(), ['assets', 'profile.json']);
-  });
-});
-
-test('empty events across both sources do not create a fictional date range', async (t) => {
-  const outputPath = await temporaryOutput(t);
-  const collected = await collectProfile({ fetchImpl: async (url) => emptySourceResponse(url), outputPath });
-  assert.deepEqual(collected.activity, { kind: 'public-events', label: '取得できた公開イベントなし', since: '', until: '', complete: false, eventCount: 0, days: [] });
-});
-
-
-const privateToken = 'fixture-token-never-publish';
-function privateRepository(id, overrides = {}) {
-  return repository(id, { private: true, name: `confidential-${id}`, html_url: `https://github.com/crudfifth/confidential-${id}`,
-    description: 'confidential description', ...overrides });
-}
-
-function authenticatedFixture({ personal = [privateRepository(701)], organizational = [], identity = 'crudfifth', languageResponse } = {}) {
-  return async (url, options) => {
-    const parsed = new URL(url);
-    if (parsed.pathname === '/user') {
-      assert.equal(options.headers.Authorization, `Bearer ${privateToken}`);
-      return Response.json({ login: identity });
-    }
-    if (parsed.pathname === '/user/repos' || (parsed.pathname === '/orgs/CRUD5thOfficial/repos' && parsed.searchParams.get('type') === 'all')) {
-      assert.equal(options.headers.Authorization, `Bearer ${privateToken}`);
-      return Response.json(parsed.pathname === '/user/repos' ? personal : organizational);
-    }
-    if (parsed.pathname.endsWith('/languages')) {
-      assert.equal(options.headers.Authorization, `Bearer ${privateToken}`);
-      return languageResponse ? languageResponse(parsed.pathname) : Response.json({ Elixir: 300, HTML: 100 });
-    }
-    assert.equal(options.headers.Authorization, `Bearer ${privateToken}`);
-    return emptySourceResponse(url);
-  };
-}
-
-test('authenticated language bytes include private repositories but never expose private metadata', async (t) => {
-  const outputPath = await temporaryOutput(t);
-  const ignoredRepository = privateRepository(799, { owner: { login: 'unrelated-owner' } });
-  const original = privateRepository(701);
-  const fork = privateRepository(702, { fork: true });
-  const orgPrivate = organizationRepository(801, { private: true, name: 'organization-confidential', description: 'organization private text' });
-  const fetched = [];
-  const fixture = authenticatedFixture({ personal: [original, fork, ignoredRepository], organizational: [orgPrivate] });
-  const collected = await collectProfile({ token: privateToken, outputPath, fetchImpl: async (url, options) => { fetched.push(url); return fixture(url, options); } });
-  assert.equal(collected.schemaVersion, 3);
-  assert.deepEqual(collected.languages, [{ name: 'Elixir', bytes: 600 }, { name: 'HTML', bytes: 200 }]);
-  assert.deepEqual(collected.languageScope, { kind: 'github-language-bytes', visibility: 'public-and-private', totalBytes: 800 });
-  assert.deepEqual(collected.repositories, { publicCount: 0, originalCount: 0, stars: 0, forks: 0 });
-  assert.deepEqual(collected.projects, []);
-  assert.equal(collected.activity.eventCount, 0);
-  assert.equal(fetched.filter((url) => url.endsWith('/languages')).length, 2);
+test('authenticated personal calendar is exactly 365 consecutive UTC dates and one captured now', async (t) => {
+  const outputPath = await output(t);
+  let clockReads = 0;
+  const collected = await collect({ outputPath, now: () => { clockReads += 1; return new Date(fixedNow); }, fetchImpl: fixture({ graph: ({ variables }) => {
+    assert.deepEqual(variables, { login: 'crudfifth', from: '2025-11-03T00:00:00.000Z', to: fixedNow });
+    const body = calendarBody();
+    body.data.user.privateRepository = { name: 'never-publish-private-name', description: 'never-publish-private-description', id: 'never-publish-private-id' };
+    calendar(body).weeks[0].contributionDays[0].repository = { url: 'https://github.com/never-publish-private-url' };
+    return Response.json(body);
+  } }) });
+  assert.equal(clockReads, 1);
+  assert.equal(collected.schemaVersion, 4);
+  assert.equal(collected.generatedAt, fixedNow);
+  assert.deepEqual(Object.keys(collected.activity).sort(), ['complete', 'days', 'kind', 'label', 'since', 'subject', 'totalCount', 'until', 'visibility']);
+  assert.equal(collected.activity.kind, 'github-contributions');
+  assert.equal(collected.activity.subject, 'crudfifth');
+  assert.equal(collected.activity.visibility, 'public-and-private');
+  assert.equal(collected.activity.label, 'コミット・PR等・公開＋非公開');
+  assert.equal(collected.activity.complete, true);
+  assert.equal(collected.activity.totalCount, 3);
+  assert.equal(collected.activity.since, '2025-11-03');
+  assert.equal(collected.activity.until, '2026-11-02');
+  assert.equal(collected.activity.days.length, 365);
+  assert.deepEqual(collected.activity.days[0], { date: '2025-11-03', count: 1 });
+  assert.deepEqual(collected.activity.days.at(-1), { date: '2026-11-02', count: 2 });
+  assert.equal(collected.activity.days.filter((day) => day.count === 0).length, 363);
   const published = `${await readFile(outputPath, 'utf8')}\n${renderProfileSvg(collected)}`;
-  for (const forbidden of [privateToken, 'confidential-701', 'confidential-702', 'unrelated-owner', 'organization-confidential', 'confidential description', 'organization private text', '701', '702', '799', '801']) {
-    assert.ok(!published.includes(forbidden), forbidden);
+  assert.doesNotMatch(published, /never-publish|fixture-only-token|public-events|eventCount/);
+  assert.deepEqual(JSON.parse(await readFile(outputPath, 'utf8')), collected);
+});
+
+test('zero contributions are a complete dated calendar, not failed retrieval', async (t) => {
+  const collected = await collect({ outputPath: await output(t), fetchImpl: fixture({ graph: () => Response.json(calendarBody({ zero: true })) }) });
+  assert.equal(collected.activity.totalCount, 0);
+  assert.equal(collected.activity.days.length, 365);
+  assert.equal(collected.activity.days.every((day) => day.count === 0), true);
+  assert.match(renderProfileSvg(collected), /0 contributions/);
+});
+
+test('365 inclusive days span leap day and remain stable across a clock midnight', async (t) => {
+  for (const timestamp of ['2024-03-01T00:00:00.000Z', '2026-11-01T23:59:59.999Z']) await t.test(timestamp, async (subtest) => {
+    let reads = 0;
+    const expectedFrom = timestamp.startsWith('2024') ? '2023-03-03T00:00:00.000Z' : '2025-11-02T00:00:00.000Z';
+    const collected = await collect({ outputPath: await output(subtest), now: () => new Date(reads++ === 0 ? timestamp : '2030-01-01T00:00:00Z'), fetchImpl: fixture({ graph: ({ variables }) => {
+      assert.equal(variables.from, expectedFrom); assert.equal(variables.to, timestamp);
+      return Response.json(calendarBody({ from: expectedFrom }));
+    } }) });
+    assert.equal(reads, 1);
+    assert.equal(collected.activity.until, timestamp.slice(0, 10));
+    if (timestamp.startsWith('2024')) assert.ok(collected.activity.days.some((day) => day.date === '2024-02-29'));
+  });
+});
+
+test('credentials are mandatory even on first generation and no public fallback is attempted', async (t) => {
+  const outputPath = await output(t);
+  let requested = false;
+  for (const previous of [null, 'previous-profile']) {
+    if (previous) await writeFile(outputPath, previous);
+    await assert.rejects(collect({ token: '', outputPath, fetchImpl: () => { requested = true; throw new Error('must not fetch'); } }), /GITHUB_TOKEN|credentials/i);
+    assert.equal(requested, false);
+    if (previous) assert.equal(await readFile(outputPath, 'utf8'), previous);
+    else assert.deepEqual(await readdir(join(outputPath, '..')), []);
   }
 });
 
-test('private collection paginates personal and organization endpoints and sums every language once', async (t) => {
-  const outputPath = await temporaryOutput(t);
-  const requests = [];
-  const fixture = authenticatedFixture();
-  const fetchImpl = async (url, options) => {
-    const parsed = new URL(url);
-    if (parsed.pathname === '/user/repos' || (parsed.pathname === '/orgs/CRUD5thOfficial/repos' && parsed.searchParams.get('type') === 'all')) {
-      const page = Number(parsed.searchParams.get('page'));
-      requests.push(`${parsed.pathname}:${page}`);
-      const offset = parsed.pathname === '/user/repos' ? 0 : 1000;
-      return Response.json(page === 1 ? Array.from({ length: 100 }, (_, index) => {
-        const id = offset + index + 1;
-        return parsed.pathname === '/user/repos' ? privateRepository(id) : organizationRepository(id, { private: true });
-      }) : page === 2 ? [parsed.pathname === '/user/repos' ? privateRepository(101) : organizationRepository(1101, { private: true })] : []);
-    }
-    return fixture(url, options);
-  };
-  const collected = await collectProfile({ token: privateToken, outputPath, fetchImpl });
-  assert.deepEqual(requests, ['/user/repos:1', '/user/repos:2', '/orgs/CRUD5thOfficial/repos:1', '/orgs/CRUD5thOfficial/repos:2']);
-  assert.deepEqual(collected.languages, [{ name: 'Elixir', bytes: 60600 }, { name: 'HTML', bytes: 20200 }]);
-});
-
-test('identity, auth, duplicate, language failure and invalid bytes preserve previous output without leaking context', async (t) => {
-  for (const failure of ['identity', 'auth', 'duplicate', 'language-http', 'invalid-bytes']) await t.test(failure, async (subtest) => {
-    const outputPath = await temporaryOutput(subtest);
-    await writeFile(outputPath, 'previous-profile\n');
-    const fixture = authenticatedFixture({
-      identity: failure === 'identity' ? 'somebody-else' : 'crudfifth',
-      personal: failure === 'duplicate' ? [privateRepository(701), privateRepository(701)] : [privateRepository(701)],
-      languageResponse: failure === 'language-http' ? () => new Response(privateToken, { status: 403 })
-        : failure === 'invalid-bytes' ? () => Response.json({ Elixir: -1 }) : undefined,
-    });
-    const fetchImpl = (url, options) => failure === 'auth' && new URL(url).pathname === '/user'
-      ? new Response('confidential-701 ' + privateToken, { status: 401 }) : fixture(url, options);
-    const error = await collectProfile({ token: privateToken, outputPath, fetchImpl }).then(() => null, (reason) => reason);
-    assert.ok(error instanceof Error);
-    assert.doesNotMatch(error.message, /confidential|fixture-token|somebody-else|701/);
-    assert.equal(await readFile(outputPath, 'utf8'), 'previous-profile\n');
+test('calendar errors and partial data preserve JSON, both SVGs and README without leaking API details', async (t) => {
+  const failures = [
+    ['HTTP', () => new Response(fixtureToken + ' never-publish-private-name', { status: 403 })],
+    ['network', () => { throw new Error(fixtureToken + ' never-publish-private-name'); }],
+    ['redirect', () => { throw new TypeError('redirect to never-publish-private-name'); }],
+    ['invalid JSON', () => new Response(fixtureToken)],
+    ['GraphQL errors', () => Response.json({ ...calendarBody(), errors: [{ message: fixtureToken + ' never-publish-private-name' }] })],
+    ['null user', () => Response.json({ data: { user: null } })],
+    ['wrong user', () => { const b = calendarBody(); b.data.user.login = 'never-publish-private-name'; return Response.json(b); }],
+    ['null calendar', () => { const b = calendarBody(); b.data.user.contributionsCollection.contributionCalendar = null; return Response.json(b); }],
+    ['missing date', () => { const b = calendarBody(); calendar(b).weeks[0].contributionDays.pop(); return Response.json(b); }],
+    ['duplicate date', () => { const b = calendarBody(); calendar(b).weeks[0].contributionDays[1].date = '2025-11-03'; return Response.json(b); }],
+    ['out of order', () => { const b = calendarBody(); calendar(b).weeks.reverse(); return Response.json(b); }],
+    ['extra date', () => { const b = calendarBody(); calendar(b).weeks[0].contributionDays.unshift({ date: '2025-11-02', contributionCount: 0 }); return Response.json(b); }],
+    ['invalid date', () => { const b = calendarBody(); calendar(b).weeks[0].contributionDays[0].date = '2025-02-30'; return Response.json(b); }],
+    ['invalid count', () => { const b = calendarBody(); calendar(b).weeks[0].contributionDays[0].contributionCount = -1; return Response.json(b); }],
+    ['fraction count', () => { const b = calendarBody(); calendar(b).weeks[0].contributionDays[0].contributionCount = 0.5; return Response.json(b); }],
+    ['total mismatch', () => { const b = calendarBody(); calendar(b).totalContributions += 1; return Response.json(b); }],
+    ['unsafe total', () => { const b = calendarBody(); calendar(b).totalContributions = Number.MAX_SAFE_INTEGER + 1; return Response.json(b); }],
+    ['timeout', (_request, { signal }) => new Promise((resolve, reject) => {
+      const timer = setTimeout(() => resolve(Response.json(calendarBody())), 1000);
+      signal.addEventListener('abort', () => { clearTimeout(timer); reject(signal.reason); }, { once: true });
+    })],
+  ];
+  for (const [name, graph] of failures) await t.test(name, async (subtest) => {
+    const outputPath = await output(subtest); const outputDir = join(outputPath, '..');
+    await writeFile(outputPath, 'previous-profile');
+    await mkdir(join(outputDir, 'assets'));
+    for (const theme of ['dark', 'light']) await writeFile(join(outputDir, `assets/profile-${theme}.svg`), `previous-${theme}`);
+    await writeFile(join(outputDir, 'README.md'), 'previous-readme');
+    const error = await (async () => {
+      await collect({ outputPath, timeoutMs: 5, fetchImpl: fixture({ graph }) });
+      await generateProfileAssets({ inputPath: outputPath, outputDir });
+    })().then(() => null, (error) => error);
+    assert.ok(error instanceof Error, name);
+    assert.doesNotMatch(error.message, /fixture-only-token|never-publish/);
+    assert.equal(await readFile(outputPath, 'utf8'), 'previous-profile');
+    for (const theme of ['dark', 'light']) assert.equal(await readFile(join(outputDir, `assets/profile-${theme}.svg`), 'utf8'), `previous-${theme}`);
+    assert.equal(await readFile(join(outputDir, 'README.md'), 'utf8'), 'previous-readme');
+    assert.deepEqual((await readdir(outputDir)).sort(), ['README.md', 'assets', 'profile.json']);
   });
 });
 
-test('authenticated snapshot cannot silently downgrade to public-only without credentials', async (t) => {
-  const outputPath = await temporaryOutput(t);
-  const previous = JSON.stringify({ schemaVersion: 3, languageScope: { visibility: 'public-and-private' } });
-  await writeFile(outputPath, previous);
-  await assert.rejects(collectProfile({ token: '', fetchImpl: emptySourceResponse, outputPath }), /credentials|GITHUB_TOKEN/i);
-  assert.equal(await readFile(outputPath, 'utf8'), previous);
+test('public repository statistics retain both owners, pagination and public-only projects', async (t) => {
+  const personal = Array.from({ length: 101 }, (_, index) => repository(index + 1));
+  personal[0] = repository(1, { fork: true, stargazers_count: 900 });
+  const org = [organizationRepository(201, { stargazers_count: 7, updated_at: '2026-11-01T00:00:00Z' })];
+  const requests = [];
+  const collected = await collect({ outputPath: await output(t), fetchImpl: fixture({ personal: [], override: (url) => {
+    if (url.pathname === '/users/crudfifth') return Response.json(profile(101));
+    if (url.pathname === '/orgs/CRUD5thOfficial') return Response.json(organization(1));
+    if (url.pathname === '/users/crudfifth/repos') {
+      requests.push(url.searchParams.get('page'));
+      return Response.json(url.searchParams.get('page') === '1' ? personal.slice(0, 100) : personal.slice(100), { headers: url.searchParams.get('page') === '1' ? { link: '<https://never-follow.invalid>; rel="next"' } : {} });
+    }
+    if (url.pathname === '/orgs/CRUD5thOfficial/repos' && url.searchParams.get('type') === 'public') return Response.json(org);
+  } }) });
+  assert.deepEqual(requests, ['1', '2']);
+  assert.deepEqual(collected.repositories, { publicCount: 102, originalCount: 101, stars: 107, forks: 202 });
+  assert.equal(collected.profile.publicRepos, 101);
+  assert.equal(collected.profile.followers, 4);
+  assert.equal(collected.projects[0].name, 'CRUD5thOfficial/repository-201');
 });
 
-test('atomic JSON replacement failure preserves destination and removes staged output', async (t) => {
-  const outputPath = await temporaryOutput(t);
-  await mkdir(outputPath);
-  await writeFile(join(outputPath, 'keep.txt'), 'keep');
-  await assert.rejects(collectProfile({ token: '', fetchImpl: emptySourceResponse, outputPath }));
+test('authenticated language bytes include private owned non-forks across both owners without exposing metadata', async (t) => {
+  const privateRepo = (id, overrides = {}) => repository(id, { private: true, name: `never-publish-private-${id}`, description: 'never-publish-description', ...overrides });
+  const requests = [];
+  const collected = await collect({ outputPath: await output(t), fetchImpl: fixture({ override: (url) => {
+    const owned = url.pathname === '/user/repos' || (url.pathname === '/orgs/CRUD5thOfficial/repos' && url.searchParams.get('type') === 'all');
+    if (!owned) return;
+    const page = Number(url.searchParams.get('page')); requests.push(`${url.pathname}:${page}`);
+    const make = (id, overrides = {}) => privateRepo(id, { ...(url.pathname.startsWith('/orgs/') ? { owner: { login: 'CRUD5thOfficial' } } : {}), ...overrides });
+    return Response.json(page === 1 ? Array.from({ length: 100 }, (_, i) => make((url.pathname.startsWith('/orgs/') ? 1000 : 0) + i + 1)) : [make(url.pathname.startsWith('/orgs/') ? 1101 : 101), make(url.pathname.startsWith('/orgs/') ? 19999 : 9999, { fork: true })]);
+  } }) });
+  assert.deepEqual(requests, ['/user/repos:1', '/user/repos:2', '/orgs/CRUD5thOfficial/repos:1', '/orgs/CRUD5thOfficial/repos:2']);
+  assert.equal(collected.languageScope.visibility, 'public-and-private');
+  assert.deepEqual(collected.languages, [{ name: 'Elixir', bytes: 60600 }, { name: 'HTML', bytes: 20200 }]);
+  assert.deepEqual(collected.repositories, { publicCount: 0, originalCount: 0, stars: 0, forks: 0 });
+  assert.deepEqual(collected.projects, []);
+  assert.doesNotMatch(JSON.stringify(collected) + renderProfileSvg(collected), /never-publish|fixture-only-token/);
+});
+
+test('identity, public metadata, pagination and language failures retain the last profile', async (t) => {
+  const cases = [
+    ['/user', () => Response.json({ login: 'another-account' }), /authenticated account/],
+    ['/user', () => new Response('never-publish', { status: 401 }), /HTTP 401/],
+    ['/users/crudfifth', () => Response.json(profile(1)), /repository page count/],
+    ['/orgs/CRUD5thOfficial', () => Response.json({ ...organization(), type: 'User' }), /source type/],
+    ['/orgs/CRUD5thOfficial', () => new Response('never-publish', { status: 503 }), /HTTP 503/],
+    ['/users/crudfifth/repos', () => Response.json([repository(1, { private: true })]), /public repository owner/],
+    ['/user/repos', () => Response.json([repository(1), repository(1)]), /duplicate owned/],
+    ['/repos/crudfifth/repository-7/languages', () => Response.json({ Elixir: -1 }), /language bytes/],
+  ];
+  for (const [target, response, pattern] of cases) await t.test(target, async (subtest) => {
+    const outputPath = await output(subtest); await writeFile(outputPath, 'previous-profile');
+    const error = await collect({ outputPath, fetchImpl: fixture({ personal: [repository(7)], override: (url) => url.pathname === target ? response() : undefined }) }).then(() => null, (error) => error);
+    assert.match(error.message, pattern); assert.doesNotMatch(error.message, /never-publish|fixture-only-token/);
+    assert.equal(await readFile(outputPath, 'utf8'), 'previous-profile');
+  });
+});
+
+test('atomic JSON replacement failure removes staged output and preserves the destination', async (t) => {
+  const outputPath = await output(t); await mkdir(outputPath); await writeFile(join(outputPath, 'keep.txt'), 'keep');
+  await assert.rejects(collect({ outputPath, fetchImpl: fixture() }));
   assert.equal(await readFile(join(outputPath, 'keep.txt'), 'utf8'), 'keep');
   assert.deepEqual(await readdir(join(outputPath, '..')), ['profile.json']);
-});
-
-
-test('authentication preserves the public-only statistics and rejects private data from public endpoints', async (t) => {
-  for (const injectedPrivate of [false, true]) await t.test(injectedPrivate ? 'private injection rejects' : 'public statistics remain public', async (subtest) => {
-    const outputPath = await temporaryOutput(subtest);
-    await writeFile(outputPath, 'previous-profile\n');
-    const publicRepository = repository(10, { private: injectedPrivate, stargazers_count: 7, forks_count: 2 });
-    const fixture = authenticatedFixture({ personal: [repository(10), privateRepository(701, { stargazers_count: 999 })] });
-    const fetchImpl = (url, options) => {
-      assert.equal(options.headers.Authorization, `Bearer ${privateToken}`);
-      const pathname = new URL(url).pathname;
-      if (pathname === '/users/crudfifth') return Response.json(profile(1));
-      if (pathname === '/users/crudfifth/repos') return Response.json([publicRepository]);
-      return fixture(url, options);
-    };
-    if (injectedPrivate) {
-      await assert.rejects(collectProfile({ token: privateToken, fetchImpl, outputPath }), /public repository owner/);
-      assert.equal(await readFile(outputPath, 'utf8'), 'previous-profile\n');
-    } else {
-      const collected = await collectProfile({ token: privateToken, fetchImpl, outputPath });
-      assert.deepEqual(collected.repositories, { publicCount: 1, originalCount: 1, stars: 7, forks: 2 });
-      assert.deepEqual(collected.projects.map((project) => project.name), ['crudfifth/repository-10']);
-      assert.equal(collected.languageScope.totalBytes, 800);
-    }
-  });
 });
