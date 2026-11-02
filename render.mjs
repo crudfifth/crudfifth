@@ -126,8 +126,16 @@ function textNode(x, y, value, className = '', attributes = '') {
   return `<text x="${x}" y="${y}" class="${className}" ${attributes}>${xmlEscape(value)}</text>`;
 }
 
+function glowLayer(content, id, phase, bounds, className = '') {
+  const [x, y, width, height] = bounds;
+  const blurId = `${id}-glow-blur`;
+  return `<defs><filter id="${blurId}" filterUnits="userSpaceOnUse" x="${x}" y="${y}" width="${width}" height="${height}" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
+<g class="profile-glow decorative ${className}" filter="url(#${blurId})" style="--delay:-${phase}s" aria-hidden="true">${content}</g>`;
+}
+
 function sectionLabel(index, label, y, trailing = '') {
-  return `${textNode(32, y, index, 'mono accent eyebrow')}${textNode(67, y, label, 'mono eyebrow muted')}${trailing ? textNode(768, y, trailing, 'mono eyebrow muted', 'text-anchor="end"') : ''}`;
+  const content = `${textNode(32, y, index, 'mono accent eyebrow')}${textNode(67, y, label, 'mono eyebrow muted')}${trailing ? textNode(768, y, trailing, 'mono eyebrow muted', 'text-anchor="end"') : ''}`;
+  return `${glowLayer(content, `section-label-${index}`, Number(index) * 0.7, [20, y - 24, 760, 40], 'profile-glow-text')}${content}`;
 }
 
 function motionStyles(theme) {
@@ -150,12 +158,17 @@ svg{font-size:14px}text{font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic
 .metric-circuit{fill:none;stroke:var(--accent);stroke-width:1.4;stroke-dasharray:.1 .9;animation:rail-flow 3.7s linear infinite,neon-pulse 2.8s ease-in-out infinite alternate;animation-delay:var(--delay,0s)}
 .metric-glow{filter:url(#metric-glow-blur);animation:metric-glow-pulse 4.2s ease-in-out infinite;animation-delay:var(--delay,0s)}
 .metric-glow-frame{fill:none;stroke:var(--accent);stroke-width:3.5}.metric-glow-value{fill:var(--accent)}
+.profile-glow{--glow-low:.16;--glow-peak:.82;animation:profile-glow-pulse 4.2s ease-in-out infinite;animation-delay:var(--delay,0s)}
+.profile-glow text{fill:var(--accent);stroke:var(--accent);stroke-width:.45}
+.profile-glow-text{--glow-low:.1;--glow-peak:.62}.profile-glow-strong{--glow-low:.28;--glow-peak:1}
+.profile-glow-line,.profile-glow-graph{fill:none;stroke:var(--accent);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round}.profile-glow-bar{fill:var(--accent)}
 .activity-trail{fill:none;stroke:var(--secondary);stroke-width:3.5;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:.035 .965;animation:activity-trail 5.6s linear infinite;opacity:.88}
 .bar-glint{fill:none;stroke:var(--secondary);stroke-width:1;stroke-linecap:round;stroke-dasharray:.08 .92;animation:bar-glint 3.6s linear infinite;animation-delay:var(--delay,0s);opacity:.7}
 .stack-glint{fill:none;stroke:var(--accent);stroke-width:1.8;stroke-linecap:round;stroke-dasharray:.24 .76;animation:stack-glint 2.7s linear infinite;animation-delay:var(--delay,0s)}
 @keyframes rail-flow{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
 @keyframes neon-pulse{from{opacity:.38}to{opacity:1}}
 @keyframes metric-glow-pulse{0%,100%{opacity:.22}50%{opacity:.85}}
+@keyframes profile-glow-pulse{0%,100%{opacity:var(--glow-low)}50%{opacity:var(--glow-peak)}}
 @keyframes chromatic-shift{0%{transform:translate(-1.4px,0)}50%{transform:translate(.7px,.5px)}100%{transform:translate(1.4px,0)}}
 @keyframes title-scan{from{stroke-dashoffset:101}to{stroke-dashoffset:0}}
 @keyframes activity-trail{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
@@ -166,7 +179,8 @@ svg{font-size:14px}text{font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic
 }
 
 function sectionRail(y, phase) {
-  return `<path d="M32 ${y} H768" class="rule"/>
+  return `${glowLayer(`<path d="M32 ${y} H768" class="profile-glow-line"/>`, `section-rail-${y}`, phase, [20, y - 12, 760, 24])}
+<path d="M32 ${y} H768" class="rule"/>
 <g class="decorative" aria-hidden="true" style="--delay:-${phase}s">
 <path d="M32 ${y - 5} V${y} H46 M754 ${y} H768 V${y + 5}" class="circuit-notch"/>
 <path d="M32 ${y} H768" pathLength="1" class="section-rail"/>
@@ -177,15 +191,23 @@ function sectionRail(y, phase) {
 function renderIntro(profile) {
   const bioLines = wrapText(profile.profile.bio || '自己紹介は未登録です', 734, 15, 2);
   const projectNames = profile.projects.map((project) => project.name).join(' / ');
+  const header = `${textNode(32, 27, 'INDEPENDENT ENGINEER / PUBLIC PROFILE', 'mono eyebrow muted')}${textNode(768, 27, `@${truncateText(profile.owner, 160, 11, true)}`, 'mono eyebrow accent', 'text-anchor="end"')}`;
+  const title = textNode(28, 111, 'CRUD5th', 'title');
+  const name = textNode(34, 137, truncateText(profile.profile.name, 700, 13), 'owner muted');
+  const bio = bioLines.map((line, index) => {
+    const content = textNode(34, 166 + index * 22, line);
+    return `${glowLayer(content, `intro-bio-${index}`, 1.4 + index * 0.7, [22, 142 + index * 22, 758, 40], 'profile-glow-text')}${content}`;
+  }).join('');
+  const recent = textNode(34, 214, projectNames ? `RECENT REPOS  ${truncateText(projectNames, 594, 11, true)}` : 'RECENT REPOS  取得したrepoなし', 'mono eyebrow muted');
   return `<g data-section="intro">
-${textNode(32, 27, 'INDEPENDENT ENGINEER / PUBLIC PROFILE', 'mono eyebrow muted')}
-${textNode(768, 27, `@${truncateText(profile.owner, 160, 11, true)}`, 'mono eyebrow accent', 'text-anchor="end"')}
+${glowLayer(header, 'intro-header', 0.7, [20, 3, 760, 40], 'profile-glow-text')}${header}
+${glowLayer(title, 'intro-title', 0, [12, 24, 420, 116], 'profile-glow-strong')}
 <g class="decorative" aria-hidden="true">${textNode(28, 111, 'CRUD5th', 'title title-ghost')}${textNode(28, 111, 'CRUD5th', 'title title-ghost secondary')}</g>
-${textNode(28, 111, 'CRUD5th', 'title')}
+${title}
 <path d="M35 122 H382" class="title-scan decorative" aria-hidden="true"/>
-${textNode(34, 137, truncateText(profile.profile.name, 700, 13), 'owner muted')}
-<g>${bioLines.map((line, index) => textNode(34, 166 + index * 22, line)).join('')}</g>
-${textNode(34, 214, projectNames ? `RECENT REPOS  ${truncateText(projectNames, 594, 11, true)}` : 'RECENT REPOS  取得したrepoなし', 'mono eyebrow muted')}
+${glowLayer(name, 'intro-name', 1.1, [22, 113, 736, 40], 'profile-glow-text')}${name}
+<g>${bio}</g>
+${glowLayer(recent, 'intro-recent-repos', 2.1, [22, 190, 758, 40], 'profile-glow-text')}${recent}
 ${sectionRail(232, 0.6)}
 </g>`;
 }
@@ -200,9 +222,10 @@ function renderStats(profile) {
 ${metrics.map(([label, count], index) => {
     const x = 34 + index * 186;
     const contentX = x + 12;
+    const labels = textNode(contentX, 333, label, 'metric-label muted');
     const circuit = `M${x} 281 V265 H${x + 18} M${x + 144} 265 H${x + 161} V281 M${x + 161} 327 V343 H${x + 143} M${x + 18} 343 H${x} V327`;
     return `<g><g class="metric-glow decorative" style="--delay:-${(index * 0.8).toFixed(1)}s" aria-hidden="true"><path d="${circuit}" class="metric-glow-frame"/>${textNode(contentX, 310, numberFormat.format(count), 'mono metric metric-glow-value')}</g>
-${textNode(contentX, 310, numberFormat.format(count), 'mono metric')}${textNode(contentX, 333, label, 'metric-label muted')}
+${textNode(contentX, 310, numberFormat.format(count), 'mono metric')}${glowLayer(labels, `metric-label-${index}`, index * 0.8, [contentX - 12, 309, 180, 40], 'profile-glow-text')}${labels}
 <path d="${circuit}" class="rule decorative" aria-hidden="true"/>
 <path d="${circuit}" class="metric-circuit decorative" pathLength="1" style="--delay:-${(index * 0.7).toFixed(1)}s" aria-hidden="true"/></g>`;
   }).join('')}
@@ -221,15 +244,17 @@ function renderActivity(profile) {
     y: baseline - day.count / maxCount * (baseline - graphTop), date: day.date, count: day.count,
   }));
   const pathData = points.map((point, index) => `${index ? 'L' : 'M'}${point.x.toFixed(2)},${point.y.toFixed(2)}`).join(' ');
-  const chart = `<path class="activity-line" pathLength="1" d="${pathData}"/>
+  const chart = `${glowLayer(`<path class="profile-glow-graph" d="${pathData}"/>`, 'activity-graph', 1.9, [23, graphTop - 12, graphWidth + 24, baseline - graphTop + 24])}
+<path class="activity-line" pathLength="1" d="${pathData}"/>
 ${points.map((point) => `<circle class="point" cx="${point.x.toFixed(2)}" cy="${point.y.toFixed(2)}" r="1.8"><title>${point.date}: ${point.count} contributions</title></circle>`).join('')}
 <path class="activity-trail decorative" pathLength="1" d="${pathData}" aria-hidden="true"/>`;
   const range = `${activity.since} — ${activity.until}`;
+  const labels = `${textNode(35, 481, range, 'mono muted', 'font-size="11"')}${textNode(765, 481, activity.label, 'muted', 'text-anchor="end" font-size="11"')}`;
   return `<g data-section="activity">${sectionLabel('02', 'GITHUB ACTIVITY', 372, `${numberFormat.format(activity.totalCount)} contributions`)}
+${glowLayer('<path d="M35 458 H765" class="profile-glow-line"/>', 'activity-baseline', 2.4, [23, 446, 754, 24])}
 <path d="M35 458 H765" class="rule"/>
 ${chart}
-${textNode(35, 481, range, 'mono muted', 'font-size="11"')}
-${textNode(765, 481, activity.label, 'muted', 'text-anchor="end" font-size="11"')}
+${glowLayer(labels, 'activity-labels', 2.7, [23, 457, 754, 40], 'profile-glow-text')}${labels}
 ${sectionRail(519, 2.8)}
 </g>`;
 }
@@ -242,17 +267,18 @@ function renderLanguages(profile, y) {
     const x = 35 + column * 382;
     const baseline = y + 65 + row * 35;
     const fraction = language.bytes / Math.max(1, totalBytes);
-    return `${textNode(x, baseline, language.name, 'mono', 'font-size="12"')}
-${textNode(x + 345, baseline, fraction * 100 < 0.1 ? '<0.1%' : `${(fraction * 100).toFixed(1)}%`, 'mono muted', 'text-anchor="end" font-size="12"')}
+    const labels = `${textNode(x, baseline, language.name, 'mono', 'font-size="12"')}${textNode(x + 345, baseline, fraction * 100 < 0.1 ? '<0.1%' : `${(fraction * 100).toFixed(1)}%`, 'mono muted', 'text-anchor="end" font-size="12"')}`;
+    const bar = `<rect class="profile-glow-bar" x="${x}" y="${baseline + 8}" width="${(345 * fraction).toFixed(2)}" height="4"/>`;
+    return `${glowLayer(`${labels}${bar}`, `language-row-${index}`, (index * 0.21).toFixed(2), [x - 12, baseline - 24, 369, 48], 'profile-glow-text')}${labels}
 <rect class="track" x="${x}" y="${baseline + 8}" width="345" height="4"/>
 <rect class="bar" x="${x}" y="${baseline + 8}" width="${(345 * fraction).toFixed(2)}" height="4"/>
 <path d="M${x} ${baseline + 15} H${x + 345}" class="bar-glint decorative" pathLength="1" style="--delay:-${(index * 0.21).toFixed(2)}s" aria-hidden="true"/>`;
   }).join('');
   const empty = profile.languages.length ? '' : textNode(35, y + 65, '取得できた言語コード量なし', 'muted');
   const visibility = profile.languageScope.visibility === 'public-and-private' ? '公開＋非公開' : '公開';
+  const labels = `${textNode(35, y + 26, `言語別コード量 · 個人＋組織・${visibility}・非fork`, 'muted', 'font-size="12"')}${textNode(765, y + 26, `${numberFormat.format(totalBytes)} bytes`, 'mono muted', 'font-size="12" text-anchor="end"')}`;
   return `<g data-section="languages">${sectionLabel('03', 'LANGUAGES', y)}
-${textNode(35, y + 26, `言語別コード量 · 個人＋組織・${visibility}・非fork`, 'muted', 'font-size="12"')}
-${textNode(765, y + 26, `${numberFormat.format(totalBytes)} bytes`, 'mono muted', 'font-size="12" text-anchor="end"')}
+${glowLayer(labels, 'language-scope', 3.2, [23, y + 2, 754, 40], 'profile-glow-text')}${labels}
 ${rows}${empty}
 ${sectionRail(y + 57 + Math.max(1, Math.ceil(profile.languages.length / 2)) * 35, 3.9)}
 </g>`;
@@ -262,7 +288,9 @@ function renderStack(y) {
   let x = 35;
   return `<g data-section="stack">${sectionLabel('04', 'TECH STACK', y)}
 ${stackNames.map((name, index) => {
-    const element = `<g>${textNode(x, y + 38, name, 'mono', 'font-size="16"')}${index < stackNames.length - 1 ? textNode(x + textWidth(name, 16, true) + 14, y + 38, '/', 'mono accent') : ''}
+    const labels = `${textNode(x, y + 38, name, 'mono', 'font-size="16"')}${index < stackNames.length - 1 ? textNode(x + textWidth(name, 16, true) + 14, y + 38, '/', 'mono accent') : ''}`;
+    const underline = `<path d="M${x} ${y + 47} h${textWidth(name, 16, true).toFixed(2)}" class="profile-glow-line"/>`;
+    const element = `<g>${glowLayer(`${labels}${underline}`, `stack-${name.toLowerCase()}`, index * 0.43, [x - 12, y + 10, textWidth(name, 16, true) + 54, 49])}${labels}
 <path d="M${x} ${y + 47} h${textWidth(name, 16, true).toFixed(2)}" class="rule decorative" aria-hidden="true"/>
 <path d="M${x} ${y + 47} h${textWidth(name, 16, true).toFixed(2)}" class="stack-glint decorative" pathLength="1" style="--delay:-${(index * 0.43).toFixed(2)}s" aria-hidden="true"/></g>`;
     x += textWidth(name, 16, true) + 42;
@@ -279,13 +307,14 @@ export function renderProfileSvg(input, { theme = 'dark' } = {}) {
   const stackY = languageY + 82 + languageRows * 35;
   const height = stackY + 102;
   const description = `${profile.profile.bio}. ${profile.projects.map((project) => `${project.name}: ${project.description}`).join('; ')}. crudfifth + CRUD5thOfficial。repo統計は公開データ。言語は個人＋組織の${profile.languageScope.visibility === 'public-and-private' ? '公開＋非公開' : '公開'}・非fork repoのdefault branchをGitHubが判定したコードbytes割合。活動はcrudfifth本人の公開＋非公開のコミット・PR等をGitHubが日別集計した直近365日のcontributions。フォロワーは個人の値。`;
+  const footer = textNode(765, height - 16, `UPDATED ${new Date(profile.generatedAt).toISOString().slice(0, 10)} UTC`, 'mono eyebrow muted', 'text-anchor="end"');
   return `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="${height}" viewBox="0 0 800 ${height}" role="img" aria-labelledby="profile-title profile-description">
 <title id="profile-title">${xmlEscape(`CRUD5th — ${profile.profile.name}`)}</title>
 <desc id="profile-description">${xmlEscape(description)}</desc>
 <style>${motionStyles(theme)}</style>
 ${renderIntro(profile)}
 ${renderStats(profile)}${renderActivity(profile)}${renderLanguages(profile, languageY)}${renderStack(stackY)}
-${textNode(765, height - 16, `UPDATED ${new Date(profile.generatedAt).toISOString().slice(0, 10)} UTC`, 'mono eyebrow muted', 'text-anchor="end"')}
+${glowLayer(footer, 'profile-footer', 3.6, [530, height - 40, 247, 36], 'profile-glow-text')}${footer}
 </svg>\n`;
 }
 
