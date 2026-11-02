@@ -28,13 +28,13 @@ test('render CLI produces all 30 themed SVGs and keeps the complete readable pro
     const names = (await readdir(path.join(directory, 'assets'))).sort();
     assert.equal(names.length, 30, 'the legacy renderer replaces assets, so both generators must run');
     assert.equal(names.filter((name) => /^profile-link-[a-z-]+-(dark|light)\.svg$/.test(name)).length, 26);
-    for (const name of names.filter((file) => file !== 'profile-dark.svg' && file !== 'profile-light.svg')) {
+    for (const name of names) {
       const svg = await readFile(path.join(directory, 'assets', name), 'utf8');
       assert.match(svg, /^<svg xmlns="http:\/\/www.w3.org\/2000\/svg"/);
       assert.match(svg, /prefers-reduced-motion: reduce/);
       assert.match(svg, /animation: none !important/);
       assert.match(svg, /@keyframes rail-flow/);
-      assert.match(svg, /@keyframes halo-pulse/);
+      assert.doesNotMatch(svg, /filter|feGaussianBlur|feDropShadow|text-shadow|box-shadow|glow|halo/i);
       assert.doesNotMatch(svg, /<script\b|<foreignObject\b|<image\b|<iframe\b|<a\b|\son[a-z]+\s*=|@import|@font-face/i);
       assert.doesNotMatch(svg, /(?:href|src)\s*=|url\(\s*["']?(?:https?:|data:|\/\/)/i);
       assert.doesNotMatch(svg, /<rect[^>]+fill="(?!none)/);

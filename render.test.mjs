@@ -41,10 +41,11 @@ test('profile keeps hero and data motion with readable reduced motion', () => {
   for (const section of ['intro', 'stats', 'activity', 'languages', 'stack']) {
     assert.match(svg, new RegExp(`data-section="${section}"`));
   }
-  for (const motion of ['rail-flow', 'profile-glow-pulse', 'chromatic-shift', 'title-scan', 'activity-trail', 'bar-glint']) {
+  for (const motion of ['rail-flow', 'chromatic-shift', 'title-scan', 'activity-trail', 'bar-glint']) {
     assert.match(svg, new RegExp(`@keyframes ${motion}`));
   }
-  assert.doesNotMatch(svg, /metric-(?:circuit|glow)|stack-glint|neon-pulse|section-label-\d+-glow-blur/);
+  assert.doesNotMatch(svg, /filter|feGaussianBlur|feDropShadow|text-shadow|box-shadow|glow|halo/i);
+  assert.doesNotMatch(svg, /metric-circuit|stack-glint|neon-pulse/);
   assert.match(svg, /prefers-reduced-motion: reduce/);
   assert.match(svg, /animation: none !important/);
   assert.match(svg, /opacity: 1 !important/);

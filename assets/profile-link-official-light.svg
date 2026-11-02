@@ -7,18 +7,13 @@ text{font-family:Arial,'Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;fill:v
 .eyebrow{font-size:15px;letter-spacing:1.1px}.heading{font-size:42px;font-weight:700;letter-spacing:-1.5px}.about-heading{font-size:35px;font-weight:700;letter-spacing:-1px}
 .frame{fill:none;stroke:var(--rule);stroke-width:1}.notch{fill:none;stroke:var(--secondary);stroke-width:1.5}.rail{fill:none;stroke:var(--accent);stroke-width:1.5;stroke-dasharray:.12 .88;animation:rail-flow 4.8s linear infinite;animation-delay:var(--delay,0s)}
 .secondary{stroke:var(--secondary);stroke-dasharray:.04 .96;animation-duration:6.4s;animation-direction:reverse}
-.halo{--halo-low:.14;--halo-peak:.7;filter:url(#halo-blur);opacity:.3;animation:halo-pulse 4.2s ease-in-out infinite;animation-delay:var(--delay,0s)}
-.halo.soft{--halo-low:.08;--halo-peak:.28}
-.halo text{fill:var(--accent);stroke:var(--accent);stroke-width:.4}.halo path{stroke:var(--accent);stroke-width:3;fill:none}
 .technology{font-size:30px;font-weight:600;letter-spacing:-1px}.stack-term{font-size:22px}.stack-divider{fill:var(--secondary);font-size:18px}.group-label{font-size:13px;letter-spacing:.8px}.body{font-size:22px}.process{font-size:18px}
 .card-name{font-size:24px;font-weight:600;letter-spacing:-.4px}.card-label{font-size:14px}.card-index{font-size:11px;letter-spacing:1px}
 .profile-icon{fill:var(--accent)}.line-icon{fill:none;stroke:var(--accent);stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.icon-well{fill:none;stroke:var(--rule);stroke-width:1}
 @keyframes rail-flow{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}
-@keyframes halo-pulse{0%,100%{opacity:var(--halo-low)}50%{opacity:var(--halo-peak)}}
 @media(prefers-reduced-motion: reduce){*,*::before,*::after{animation: none !important}.decorative{display:none !important}}
 </style>
-<defs><filter id="halo-blur" x="-15%" y="-50%" width="130%" height="200%" color-interpolation-filters="sRGB"><feGaussianBlur stdDeviation="3"/></filter></defs>
-<g class="halo decorative " style="--delay:-3.01s" aria-hidden="true"><path d="M12 6 H384 V86 L372 98 H6 V12 Z" class="frame"/><text x="88" y="45" class="card-name" >CRUD5th Official</text></g><path d="M12 6 H384 V86 L372 98 H6 V12 Z" class="frame"/><text x="88" y="45" class="card-name" >CRUD5th Official</text>
+<path d="M12 6 H384 V86 L372 98 H6 V12 Z" class="frame"/><text x="88" y="45" class="card-name" >CRUD5th Official</text>
 <rect x="24" y="28" width="48" height="48" rx="11" class="icon-well"/>
 <g class="profile-icon line-icon" transform="translate(32 36) scale(1.3333333333333333)" aria-hidden="true"><path d="M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0M2 12h20M12 2c6 5.5 6 14.5 0 20-6-5.5-6-14.5 0-20"/></g>
 <text x="88" y="72" class="mono muted card-label" >crudfifth.com</text>
