@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const profileRoot = path.dirname(fileURLToPath(import.meta.url));
-const stackNames = ['TypeScript', 'Python', 'Rust', 'React', 'Node.js', 'Vue.js'];
+const stackNames = ['Elixir', 'Ada', 'Zig', 'Rust', 'TypeScript', 'Python'];
 const numberFormat = new Intl.NumberFormat('en-US');
 
 function requireText(value, label) {
